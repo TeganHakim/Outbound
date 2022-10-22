@@ -1,9 +1,10 @@
 import tkinter
-from tkinter.font import Font
+from tkinter import filedialog
 import tkinter.messagebox
 import customtkinter
-
-customtkinter.set_appearance_mode("System")
+import tkcalendar
+import datetime
+customtkinter.set_appearance_mode("Dark")
 customtkinter.set_default_color_theme("blue")
 # Tkinter App
 class App(customtkinter.CTk):
@@ -78,6 +79,7 @@ class App(customtkinter.CTk):
                                                                 values=["Light", "Dark", "System"],
                                                                 command=self.change_appearance_mode)
         self.appearance_dropdown.grid(row=10, column=0, pady=(5, 10), padx=20, sticky="w")
+        self.appearance_dropdown.set("Dark")
 
     def switch_frame(self, frame_class):
         """Destroys current frame and replaces it with a new one."""
@@ -140,10 +142,10 @@ class MessageCenter(customtkinter.CTkFrame):
         self.selected_groups_label = customtkinter.CTkLabel(master=self.frame_right,
                                                         text="Selected Groups:",
                                                         text_font=("Roboto Medium", -16, "bold"))
-        self.selected_groups_label.grid(row=0, column=2, columnspan=1, pady=(20, 0), padx=(0, 15), sticky="")
+        self.selected_groups_label.grid(row=0, column=2, columnspan=1, pady=(20, 0), padx=(0, 20), sticky="")
 
         self.selected_groups_frame = customtkinter.CTkFrame(master=self.frame_right)
-        self.selected_groups_frame.grid(row=1, column=2, pady=10, padx=(0, 15), sticky="nsew")
+        self.selected_groups_frame.grid(row=1, column=2, pady=10, padx=(0, 20), sticky="nsew")
         self.selected_groups_frame.rowconfigure(0, weight=1)
         self.selected_groups_frame.rowconfigure(1, weight=1)
         self.selected_groups_frame.rowconfigure(2, weight=1)
@@ -166,46 +168,95 @@ class MessageCenter(customtkinter.CTkFrame):
                                                      text="Credit/Debit")
         self.selected_group_5.grid(row=4, column=0, pady=(5, 20), padx=20, sticky="nws")
 
-        self.switch_1 = customtkinter.CTkSwitch(master=self.frame_right,
-                                                text="CTkSwitch")
-        self.switch_1.grid(row=4, column=2, columnspan=1, pady=10, padx=20, sticky="we")
-
-        self.switch_2 = customtkinter.CTkSwitch(master=self.frame_right,
-                                                text="CTkSwitch")
-        self.switch_2.grid(row=5, column=2, columnspan=1, pady=10, padx=20, sticky="we")
-
-        self.combobox_1 = customtkinter.CTkComboBox(master=self.frame_right,
-                                                    values=["Value 1", "Value 2"])
-        self.combobox_1.grid(row=6, column=2, columnspan=1, pady=10, padx=20, sticky="we")
-
-        self.check_box_1 = customtkinter.CTkCheckBox(master=self.frame_right,
-                                                     text="CTkCheckBox")
-        self.check_box_1.grid(row=6, column=0, pady=10, padx=20, sticky="w")
-
-        self.check_box_2 = customtkinter.CTkCheckBox(master=self.frame_right,
-                                                     text="CTkCheckBox")
-        self.check_box_2.grid(row=6, column=1, pady=10, padx=20, sticky="w")
-
-        self.entry = customtkinter.CTkEntry(master=self.frame_right,
-                                            width=120,
-                                            placeholder_text="CTkEntry")
-        self.entry.grid(row=8, column=0, columnspan=2, pady=20, padx=20, sticky="we")
-
-        self.button_5 = customtkinter.CTkButton(master=self.frame_right,
-                                                text="CTkButton",
+        self.date_select_label = customtkinter.CTkLabel(master=self.frame_right,
+                                                        text="Scheduled Send:",
+                                                        text_font=("Roboto Medium", -16, "bold"))
+        self.date_select_label.grid(row=3, column=2, columnspan=1, pady=(20, 0), padx=(0, 20), sticky="")
+        self.date_select_frame = customtkinter.CTkFrame(master=self.frame_right)
+        self.date_select_frame.grid(row=4, column=2, pady=10, padx=(0, 20), sticky="nsew")
+        self.date_select_frame.rowconfigure((1, 2, 3, 4), weight=1)
+        self.date_select_frame.columnconfigure((0, 1), weight=1)
+        self.month = customtkinter.CTkComboBox(master=self.date_select_frame,
+                                                command=self.month_changed,
+                                                values=("January", "February", "March", "April", "May", "June", 
+                                                "July", "August", "September", "October", "November", "December"))                            
+        self.month.grid(row=0, column=0, pady=10, padx=5, sticky="nsew")  
+        self.month.set(datetime.datetime.now().strftime("%B"))      
+        self.day = customtkinter.CTkComboBox(master=self.date_select_frame,
+                                            command=self.day_changed,
+                                            values=("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12",
+                                            "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24",
+                                             "25", "26", "27", "28", "29", "30", "31"))
+        self.day.grid(row=1, column=0, pady=10, padx=5, sticky="nsew")
+        self.day.set(datetime.datetime.now().day)
+        current_year = datetime.datetime.now().year
+        self.year = customtkinter.CTkComboBox(master=self.date_select_frame,
+                                            command=self.year_changed,
+                                            values=(str(current_year), str(current_year + 1), str(current_year + 2)))
+        self.year.grid(row=2, column=0, pady=10, padx=5, sticky="nsew")
+        self.year.set(current_year)
+        self.time = customtkinter.CTkEntry(master=self.date_select_frame,
+                                            width=100,
+                                            placeholder_text="hh:mm")
+        self.time.grid(row=3, column=0, pady=10, padx=5, sticky="nsw")
+        self.am_pm = customtkinter.CTkComboBox(master=self.date_select_frame,
+                                            width=75,
+                                            command=self.am_pm_changed,
+                                            values=["AM", "PM"])
+        self.am_pm.grid(row=3, column=0, pady=10, padx=5, sticky="nse")
+        
+        self.instant = customtkinter.IntVar(value=1)
+        self.instant_switch = customtkinter.CTkSwitch(master=self.date_select_frame, 
+                                                    text="Send Instantly", 
+                                                    command=self.instant_changed,
+                                                    variable=self.instant, 
+                                                    onvalue=1, 
+                                                    offvalue=0,
+                                                    text_font=("Roboto Medium", -16))
+        self.instant_switch.grid(row=4, column=0, pady=(5, 10), padx=20, sticky="we")
+        self.sendMessage = customtkinter.CTkButton(master=self.frame_right,
+                                                text="Send Message",
                                                 border_width=2,  # <- custom border_width
                                                 fg_color=None,  # <- no fg_color
                                                 command=self.button_event)
-        self.button_5.grid(row=8, column=2, columnspan=1, pady=20, padx=20, sticky="we")
-
-        # set default values
-        self.combobox_1.set("CTkCombobox")
-        self.switch_2.select()
-        self.check_box_1.configure(state=tkinter.DISABLED, text="CheckBox disabled")
-        self.check_box_2.select()
+        self.sendMessage.grid(row=8, column=2, columnspan=1, pady=20, padx=20, sticky="we")
 
     def button_event(self):
         print(self.master.winfo_width())
+
+    def month_changed(self, event):
+        if str(event) != str(datetime.datetime.now().strftime("%B")):
+            self.instant_switch.deselect()
+            self.instant.set(0)
+        else:
+            if int(self.day.get()) == int(datetime.datetime.now().day) and int(self.year.get()) == int(datetime.datetime.now().year):
+                self.instant_switch.select()
+                self.instant.set(1)            
+
+    def day_changed(self, event):
+        if int(event) != int(datetime.datetime.now().day):
+            self.instant_switch.deselect();
+            self.instant.set(0)
+        else:
+            if str(self.month.get()) == str(datetime.datetime.now().strftime("%B")) and int(self.year.get()) == int(datetime.datetime.now().year):
+                self.instant_switch.select()
+                self.instant.set(1)
+            
+    def year_changed(self, event):
+        if int(event) != int(datetime.datetime.now().year):
+            self.instant_switch.deselect()
+            self.instant.set(0)
+        else:
+            if str(self.month.get()) == str(datetime.datetime.now().strftime("%B")) and int(self.day.get()) == int(datetime.datetime.now().day):
+                self.instant_switch.select()
+                self.instant.set(1)
+    def am_pm_changed(self, event):
+        pass
+    def instant_changed(self):
+        if self.instant.get() == 1:
+            self.month.set(datetime.datetime.now().strftime("%B"))
+            self.day.set(datetime.datetime.now().day)
+            self.year.set(datetime.datetime.now().year)
 
 class ClientManager(customtkinter.CTkFrame):
     def __init__(self, master):
@@ -218,113 +269,96 @@ class ClientManager(customtkinter.CTkFrame):
 
         # configure grid layout (3x7)
         self.frame_right.rowconfigure((0, 1, 2, 3), weight=1)
-        self.frame_right.rowconfigure(7, weight=10)
+        self.frame_right.rowconfigure(5, weight=10)
         self.frame_right.columnconfigure((0, 1), weight=1)
         self.frame_right.columnconfigure(2, weight=0)
 
         self.frame_info = customtkinter.CTkFrame(master=self.frame_right)
-        self.frame_info.grid(row=0, column=0, columnspan=2, rowspan=4, pady=20, padx=20, sticky="nsew")
+        self.frame_info.grid(row=0, column=0, columnspan=2, rowspan=9, pady=20, padx=20, sticky="nsew")
         # ============ frame_info ============
 
         # configure grid layout (1x1)
         self.frame_info.rowconfigure(1, weight=1)
         self.frame_info.columnconfigure(0, weight=1)
 
-        self.message_label = customtkinter.CTkLabel(master=self.frame_info,
-                                                    text="Client Manager:",
+        self.client_list_label = customtkinter.CTkLabel(master=self.frame_info,
+                                                    text="Client List:",
                                                     text_font=("Roboto Medium", -18, "bold"))
-        self.message_label.grid(column=0, row=0, sticky="nwe", padx=15, pady=(10, 0))
-        self.message = customtkinter.CTkTextbox(master=self.frame_info,
-                                                height=200,
+        self.client_list_label.grid(column=0, row=0, sticky="new", padx=(15, 10), pady=(10, 0))
+        self.client_list = customtkinter.CTkTextbox(master=self.frame_info,
                                                 corner_radius=10,
+                                                height=200,
                                                 fg_color=("white", "gray38"),
                                                 text_font=("Roboto", -14))
-        self.message.grid(column=0, row=1, sticky="nsew", padx=15, pady=(10, 15))
+        self.client_list.grid(row=1, column=0, sticky="nsew", padx=15, pady=(10, 15))
+        with open("clients.csv", "r") as f:
+            self.client_list.insert('0.0', f.read())
+        self.client_list.configure(state="disabled") #read only
+
+        self.client_list_scrollbar = customtkinter.CTkScrollbar(self.frame_info, 
+                                                                scrollbar_color=self.frame_right.bg_color,
+                                                                fg_color=("white", "gray38"),
+                                                                corner_radius=10,
+                                                                command=self.client_list.yview)
+        self.client_list_scrollbar.grid(row=1, column=0, sticky="nse", pady=(15, 25), padx=(0, 15))
+        self.client_list.configure(yscrollcommand=self.client_list_scrollbar.set)
+
         # ============ frame_right ============
+        self.upload_file_label = customtkinter.CTkLabel(master=self.frame_right,
+                                                        text="Update Client List:",
+                                                        text_font=("Roboto Medium", -16, "bold"))
+        self.upload_file_label.grid(row=0, column=2, columnspan=1, pady=(20, 0), padx=(0, 20), sticky="")
+        self.upload_file_button = customtkinter.CTkButton(master=self.frame_right,
+                                                text="Upload File",
+                                                border_width=2,  # <- custom border_width
+                                                fg_color=None,  # <- no fg_color
+                                                command=self.upload_file)
+        self.upload_file_button.grid(row=1, column=2, pady=0, padx=(0, 20), sticky="new")
 
-        self.radio_var = tkinter.IntVar(value=0)
 
-        self.label_radio_group = customtkinter.CTkLabel(master=self.frame_right,
-                                                        text="CTkRadioButton Group:")
-        self.label_radio_group.grid(row=0, column=2, columnspan=1, pady=20, padx=10, sticky="")
+        self.filter_groups_label = customtkinter.CTkLabel(master=self.frame_right,
+                                                        text="Filter by Group:",
+                                                        text_font=("Roboto Medium", -16, "bold"))
+        self.filter_groups_label.grid(row=6, column=2, columnspan=1, pady=(20, 0), padx=(0, 20), sticky="")
 
-        self.radio_button_1 = customtkinter.CTkRadioButton(master=self.frame_right,
-                                                           variable=self.radio_var,
-                                                           value=0)
-        self.radio_button_1.grid(row=1, column=2, pady=10, padx=20, sticky="n")
+        self.filter_groups_frame = customtkinter.CTkFrame(master=self.frame_right)
+        self.filter_groups_frame.grid(row=7, column=2, pady=10, padx=(0, 20), sticky="nsew")
+        self.filter_groups_frame.rowconfigure(0, weight=1)
+        self.filter_groups_frame.rowconfigure(1, weight=1)
+        self.filter_groups_frame.rowconfigure(2, weight=1)
+        self.filter_groups_frame.rowconfigure(3, weight=1)
+        self.filter_groups_frame.rowconfigure(4, weight=1)
 
-        self.radio_button_2 = customtkinter.CTkRadioButton(master=self.frame_right,
-                                                           variable=self.radio_var,
-                                                           value=1)
-        self.radio_button_2.grid(row=2, column=2, pady=10, padx=20, sticky="n")
-
-        self.radio_button_3 = customtkinter.CTkRadioButton(master=self.frame_right,
-                                                           variable=self.radio_var,
-                                                           value=2)
-        self.radio_button_3.grid(row=3, column=2, pady=10, padx=20, sticky="n")
-
-        self.slider_1 = customtkinter.CTkSlider(master=self.frame_right,
-                                                from_=0,
-                                                to=1,
-                                                number_of_steps=3)
-        self.slider_1.grid(row=4, column=0, columnspan=2, pady=10, padx=20, sticky="we")
-
-        self.slider_2 = customtkinter.CTkSlider(master=self.frame_right)
-        self.slider_2.grid(row=5, column=0, columnspan=2, pady=10, padx=20, sticky="we")
-
-        self.switch_1 = customtkinter.CTkSwitch(master=self.frame_right,
-                                                text="CTkSwitch")
-        self.switch_1.grid(row=4, column=2, columnspan=1, pady=10, padx=20, sticky="we")
-
-        self.switch_2 = customtkinter.CTkSwitch(master=self.frame_right,
-                                                text="CTkSwitch")
-        self.switch_2.grid(row=5, column=2, columnspan=1, pady=10, padx=20, sticky="we")
-
-        self.combobox_1 = customtkinter.CTkComboBox(master=self.frame_right,
-                                                    values=["Value 1", "Value 2"])
-        self.combobox_1.grid(row=6, column=2, columnspan=1, pady=10, padx=20, sticky="we")
-
-        self.check_box_1 = customtkinter.CTkCheckBox(master=self.frame_right,
-                                                     text="CTkCheckBox")
-        self.check_box_1.grid(row=6, column=0, pady=10, padx=20, sticky="w")
-
-        self.check_box_2 = customtkinter.CTkCheckBox(master=self.frame_right,
-                                                     text="CTkCheckBox")
-        self.check_box_2.grid(row=6, column=1, pady=10, padx=20, sticky="w")
-
-        self.entry = customtkinter.CTkEntry(master=self.frame_right,
-                                            width=120,
-                                            placeholder_text="CTkEntry")
-        self.entry.grid(row=8, column=0, columnspan=2, pady=20, padx=20, sticky="we")
+        self.filter_group_1 = customtkinter.CTkCheckBox(master=self.filter_groups_frame,
+                                                     text="Paypal")
+        self.filter_group_1.grid(row=0, column=0, pady=(20, 5), padx=20, sticky="nws")
+        self.filter_group_2 = customtkinter.CTkCheckBox(master=self.filter_groups_frame,
+                                                     text="Venmo")
+        self.filter_group_2.grid(row=1, column=0, pady=5, padx=20, sticky="nws")
+        self.filter_group_3 = customtkinter.CTkCheckBox(master=self.filter_groups_frame,
+                                                     text="Zelle")
+        self.filter_group_3.grid(row=2, column=0, pady=5, padx=20, sticky="nws")
+        self.filter_group_4 = customtkinter.CTkCheckBox(master=self.filter_groups_frame,
+                                                     text="CashApp")
+        self.filter_group_4.grid(row=3, column=0, pady=5, padx=20, sticky="nws")
+        self.filter_group_5 = customtkinter.CTkCheckBox(master=self.filter_groups_frame,
+                                                     text="Credit/Debit")
+        self.filter_group_5.grid(row=4, column=0, pady=(5, 20), padx=20, sticky="nws")
 
         self.button_5 = customtkinter.CTkButton(master=self.frame_right,
                                                 text="CTkButton",
                                                 border_width=2,  # <- custom border_width
                                                 fg_color=None,  # <- no fg_color
                                                 command=self.button_event)
-        self.button_5.grid(row=8, column=2, columnspan=1, pady=20, padx=20, sticky="we")
-
-        # set default values
-        self.combobox_1.set("CTkCombobox")
-        self.radio_button_1.select()
-        self.slider_1.set(0.2)
-        self.slider_2.set(0.7)
-        self.switch_2.select()
-        self.radio_button_3.configure(state=tkinter.DISABLED)
-        self.check_box_1.configure(state=tkinter.DISABLED, text="CheckBox disabled")
-        self.check_box_2.select()
+        self.button_5.grid(row=8, column=2, columnspan=1, pady=20, padx=(0, 20), sticky="we")
 
     def button_event(self):
         print("Button pressed")
 
-# def resize(event):
-#     if (event.width > 500):
-#         app.title.configure(font=("Roboto Medium", -30, "bold"))
-#         app.subtitle.configure(font=("Roboto Medium", -23, "italic"))
-#         app.frame_right.message_label.configure(font=("Roboto Medium", -25, "bold"))
-    
+    def upload_file(self):
+        file_types = [('Excel Files', '*.xlsx'), ('CSV Files', '*.csv'), ('All Files', '*.*')]
+        filename = filedialog.askopenfilename(title="Import Client List", filetypes=file_types)
 
 if __name__ == "__main__":
     app = App()
-    # app.bind('<Configure>', resize)
     app.mainloop()
