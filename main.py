@@ -4,6 +4,7 @@ import tkinter.messagebox
 import customtkinter
 import tkcalendar
 import datetime
+import re
 customtkinter.set_appearance_mode("Dark")
 customtkinter.set_default_color_theme("blue")
 # Tkinter App
@@ -195,17 +196,33 @@ class MessageCenter(customtkinter.CTkFrame):
                                             values=(str(current_year), str(current_year + 1), str(current_year + 2)))
         self.year.grid(row=2, column=0, pady=10, padx=5, sticky="nsew")
         self.year.set(current_year)
+       
+        self.error_label = customtkinter.CTkLabel(master=self.date_select_frame,
+                                                        text="",
+                                                        text_color="#D5806B",
+                                                        text_font=("Roboto", -12, "italic"))
+        self.error_label.grid(row=4, column=0, columnspan=1, sticky="nsew")
+
+        self.vcmd = (self.register(self.validate), '%P')
+        self.ivcmd = (self.register(self.on_invalid),)
+
         self.time = customtkinter.CTkEntry(master=self.date_select_frame,
                                             width=100,
+                                            fg_color=self.date_select_frame.bg_color,
+                                            validate="focusout",
+                                            validatecommand=self.vcmd, 
+                                            invalidcommand=self.ivcmd,
                                             placeholder_text="hh:mm")
         self.time.grid(row=3, column=0, pady=10, padx=5, sticky="nsw")
+
         self.am_pm = customtkinter.CTkComboBox(master=self.date_select_frame,
                                             width=75,
                                             command=self.am_pm_changed,
                                             values=["AM", "PM"])
         self.am_pm.grid(row=3, column=0, pady=10, padx=5, sticky="nse")
         
-        self.instant = customtkinter.IntVar(value=1)
+
+        self.instant = customtkinter.IntVar(value=0)
         self.instant_switch = customtkinter.CTkSwitch(master=self.date_select_frame, 
                                                     text="Send Instantly", 
                                                     command=self.instant_changed,
@@ -213,50 +230,96 @@ class MessageCenter(customtkinter.CTkFrame):
                                                     onvalue=1, 
                                                     offvalue=0,
                                                     text_font=("Roboto Medium", -16))
-        self.instant_switch.grid(row=4, column=0, pady=(5, 10), padx=20, sticky="we")
-        self.sendMessage = customtkinter.CTkButton(master=self.frame_right,
+        self.instant_switch.grid(row=5, column=0, pady=(5, 10), padx=20, sticky="we")
+        self.send_message = customtkinter.CTkButton(master=self.frame_right,
                                                 text="Send Message",
                                                 border_width=2,  # <- custom border_width
                                                 fg_color=None,  # <- no fg_color
-                                                command=self.button_event)
-        self.sendMessage.grid(row=8, column=2, columnspan=1, pady=20, padx=20, sticky="we")
+                                                command=self.send_message)
+        self.send_message.grid(row=8, column=2, columnspan=1, pady=20, padx=20, sticky="we")
 
     def button_event(self):
         print(self.master.winfo_width())
 
+    def send_message(self):
+        self.master.focus()
+
     def month_changed(self, event):
+        time = datetime.datetime.strptime((datetime.datetime.now().strftime("%H:%M")), "%H:%M")
         if str(event) != str(datetime.datetime.now().strftime("%B")):
             self.instant_switch.deselect()
             self.instant.set(0)
         else:
-            if int(self.day.get()) == int(datetime.datetime.now().day) and int(self.year.get()) == int(datetime.datetime.now().year):
+            if int(self.day.get()) == int(datetime.datetime.now().day) and int(self.year.get()) == int(datetime.datetime.now().year and str(self.time.get()) == str(time.strftime("%I:%M")) and str(self.am_pm.get()) == str(time.strftime("%p"))):
                 self.instant_switch.select()
                 self.instant.set(1)            
 
     def day_changed(self, event):
+        time = datetime.datetime.strptime((datetime.datetime.now().strftime("%H:%M")), "%H:%M")
         if int(event) != int(datetime.datetime.now().day):
             self.instant_switch.deselect();
             self.instant.set(0)
         else:
-            if str(self.month.get()) == str(datetime.datetime.now().strftime("%B")) and int(self.year.get()) == int(datetime.datetime.now().year):
+            if str(self.month.get()) == str(datetime.datetime.now().strftime("%B")) and int(self.year.get()) == int(datetime.datetime.now().year and str(self.time.get()) == str(time.strftime("%I:%M")) and str(self.am_pm.get()) == str(time.strftime("%p"))):
                 self.instant_switch.select()
                 self.instant.set(1)
             
     def year_changed(self, event):
+        time = datetime.datetime.strptime((datetime.datetime.now().strftime("%H:%M")), "%H:%M")
         if int(event) != int(datetime.datetime.now().year):
             self.instant_switch.deselect()
             self.instant.set(0)
         else:
-            if str(self.month.get()) == str(datetime.datetime.now().strftime("%B")) and int(self.day.get()) == int(datetime.datetime.now().day):
+            if str(self.month.get()) == str(datetime.datetime.now().strftime("%B")) and int(self.day.get()) == int(datetime.datetime.now().day and str(self.time.get()) == str(time.strftime("%I:%M")) and str(self.am_pm.get()) == str(time.strftime("%p"))):
                 self.instant_switch.select()
                 self.instant.set(1)
+
+    def time_changed(self, *args):
+        time = datetime.datetime.strptime((datetime.datetime.now().strftime("%H:%M")), "%H:%M")
+        if str(self.time.get()) != str(time.strftime("%I%M")):
+            self.instant_switch.deselect()
+            self.instant.set(0)
+        else:
+            if str(self.month.get()) == str(datetime.datetime.now().strftime("%B")) and int(self.day.get()) == int(datetime.datetime.now().day) and int(self.year.get()) == int(datetime.datetime.now().year) and str(self.am_pm.get()) == str(time.strftime("%p")):
+                self.instant_switch.select()
+                self.instant.set(1)
+
     def am_pm_changed(self, event):
-        pass
+        time = datetime.datetime.strptime((datetime.datetime.now().strftime("%H:%M")), "%H:%M")
+        if str(event) != str(time.strftime("%p")):
+            self.instant_switch.deselect()
+            self.instant.set(0)
+        else:
+            if str(self.month.get()) == str(datetime.datetime.now().strftime("%B")) and int(self.day.get()) == int(datetime.datetime.now().day) and int(self.year.get()) == int(datetime.datetime.now().year) and str(self.time.get()) == str(time.strftime("%I:%M")):
+                self.instant_switch.select()
+                self.instant.set(1)
+
+    def show_message(self, error=''):
+        self.error_label.configure(text=error)
+        if (error == ''):
+            self.time.configure(fg_color=self.date_select_frame.bg_color)
+        else:
+            self.time.configure(fg_color="#B66A58")
+
+    def validate(self, event):   
+        pattern = r'^(0?[1-9]|1[0-2]):[0-5][0-9]$'
+        if (re.fullmatch(pattern, event) is None):
+            return False
+        self.show_message()
+        return True         
+
+    def on_invalid(self):
+        self.show_message('Enter a valid time (hh:mm)')
+
     def instant_changed(self):
         if self.instant.get() == 1:
             self.month.set(datetime.datetime.now().strftime("%B"))
             self.day.set(datetime.datetime.now().day)
             self.year.set(datetime.datetime.now().year)
+            self.time.delete(0, "end")
+            time = datetime.datetime.strptime((datetime.datetime.now().strftime("%H:%M")), "%H:%M")
+            self.time.insert(0, time.strftime("%I:%M"))
+            self.am_pm.set(time.strftime("%p"))
 
 class ClientManager(customtkinter.CTkFrame):
     def __init__(self, master):
