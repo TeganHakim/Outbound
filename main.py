@@ -2,9 +2,8 @@ import tkinter
 from tkinter import filedialog
 import tkinter.messagebox
 import customtkinter
-import tkcalendar
-import datetime
-import re
+import datetime, re
+
 customtkinter.set_appearance_mode("Dark")
 customtkinter.set_default_color_theme("blue")
 # Tkinter App
@@ -13,8 +12,8 @@ class App(customtkinter.CTk):
     WIDTH = 1200
     HEIGHT = 720
 
-    MINWIDTH = 780
-    MINHEIGHT = 520
+    MINWIDTH = 860
+    MINHEIGHT = 700
 
     def __init__(self):
         super().__init__()
@@ -132,16 +131,57 @@ class MessageCenter(customtkinter.CTkFrame):
         self.message_label = customtkinter.CTkLabel(master=self.frame_info,
                                                     text="Message Content:",
                                                     text_font=("Roboto Medium", -18, "bold"))
-        self.message_label.grid(column=0, row=0, sticky="new", padx=(15, 10), pady=(10, 0))
+        self.message_label.grid(row=0, column=0, sticky="new", padx=(15, 10), pady=(10, 0))
         self.message = customtkinter.CTkTextbox(master=self.frame_info,
                                                 corner_radius=10,
                                                 fg_color=("white", "gray38"),
                                                 text_font=("Roboto", -14))
-        self.message.grid(column=0, row=1, sticky="nsew", padx=15, pady=(10, 15))
+        self.message.grid(row=1, column=0, sticky="nsew", padx=15, pady=(10, 15))
+
+        self.send_filter_frame = customtkinter.CTkFrame(master=self.frame_right, corner_radius=10)
+        self.send_filter_frame.grid(row=4, column=0, columnspan=2, rowspan=5, sticky="nsew", padx=15, pady=(0, 15))
+
+        self.send_filter_frame.rowconfigure(1, weight=1)
+        self.send_filter_frame.columnconfigure(0, weight=1)
+        
+        self.send_filter_label = customtkinter.CTkLabel(master=self.send_filter_frame,
+                                                    corner_radius=10,
+                                                    text="Filter By Date:",
+                                                    text_font=("Roboto Medium", -18, "bold"))
+        self.send_filter_label.grid(row=0, column=0, sticky="new", padx=(15, 10), pady=(10, 0))
+
+        self.select_dates_frame = customtkinter.CTkFrame(master=self.send_filter_frame)
+        self.select_dates_frame.grid(row=1, column=0, columnspan=2, rowspan=5, sticky="nsew", padx=15, pady=(0, 15))
+
+        self.select_dates_frame.rowconfigure(0, weight=1)
+        self.select_dates_frame.rowconfigure(1, weight=1)
+        self.select_dates_frame.rowconfigure(2, weight=1)
+        self.select_dates_frame.rowconfigure(3, weight=1)
+        self.select_dates_frame.columnconfigure(0, weight=1)
+        self.select_dates_frame.columnconfigure(1, weight=1)
+        self.select_dates_frame.columnconfigure(2, weight=1)
+
+        self.possible_dates = customtkinter.CTkTextbox(self.select_dates_frame, fg_color=("white", "gray38"))
+        self.possible_dates.grid(row=0, column=0, rowspan=4, sticky="nsew", padx=(15, 0), pady=(10, 15))
+
+        self.select_button = customtkinter.CTkButton(master=self.select_dates_frame,
+                                                text="Select Date",
+                                                border_width=2,  # <- custom border_width
+                                                fg_color=None)  # <- no fg_color)
+        self.select_button.grid(row=1, column=1, sticky="")
+        self.delete_button = customtkinter.CTkButton(master=self.select_dates_frame,
+                                                text="Remove Date",
+                                                border_width=2,  # <- custom border_width
+                                                fg_color=None)  # <- no fg_color)
+        self.delete_button.grid(row=2, column=1, sticky="")
+
+        self.final_dates = customtkinter.CTkTextbox(self.select_dates_frame, fg_color=("white", "gray38"))
+        self.final_dates.grid(row=0, column=2, rowspan=4, sticky="nsew", padx=(0, 15), pady=(10, 15))
+
         # ============ frame_right ============
 
         self.selected_groups_label = customtkinter.CTkLabel(master=self.frame_right,
-                                                        text="Selected Groups:",
+                                                        text="Selected Leads:",
                                                         text_font=("Roboto Medium", -16, "bold"))
         self.selected_groups_label.grid(row=0, column=2, columnspan=1, pady=(20, 0), padx=(0, 20), sticky="")
 
@@ -239,11 +279,11 @@ class MessageCenter(customtkinter.CTkFrame):
         self.send_message.grid(row=8, column=2, columnspan=1, pady=20, padx=20, sticky="we")
 
     def button_event(self):
-        print(self.master.winfo_width())
+        pass
 
     def send_message(self):
         self.master.focus()
-
+        
     def month_changed(self, event):
         time = datetime.datetime.strptime((datetime.datetime.now().strftime("%H:%M")), "%H:%M")
         if str(event) != str(datetime.datetime.now().strftime("%B")):
