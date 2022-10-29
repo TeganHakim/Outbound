@@ -71,16 +71,16 @@ class App(customtkinter.CTk):
                                                             command=self.client_manager)
         self.client_manager_button.grid(row=3, column=0, pady=10, padx=20)
 
-        self.appearance_label = customtkinter.CTkLabel(master=self.frame_left, 
-                                                        text="Appearance Mode:",
-                                                        text_font=("Roboto Medium", -14))
-        self.appearance_label.grid(row=9, column=0, pady=0, padx=20, sticky="w")
+        # self.appearance_label = customtkinter.CTkLabel(master=self.frame_left, 
+        #                                                 text="Appearance Mode:",
+        #                                                 text_font=("Roboto Medium", -14))
+        # self.appearance_label.grid(row=9, column=0, pady=0, padx=20, sticky="w")
 
-        self.appearance_dropdown = customtkinter.CTkOptionMenu(master=self.frame_left,
-                                                                values=["Light", "Dark", "System"],
-                                                                command=self.change_appearance_mode)
-        self.appearance_dropdown.grid(row=10, column=0, pady=(5, 10), padx=20, sticky="w")
-        self.appearance_dropdown.set("Dark")
+        # self.appearance_dropdown = customtkinter.CTkOptionMenu(master=self.frame_left,
+        #                                                         values=["Light", "Dark", "System"],
+        #                                                         command=self.change_appearance_mode)
+        # self.appearance_dropdown.grid(row=10, column=0, pady=(5, 10), padx=20, sticky="w")
+        # self.appearance_dropdown.set("Dark")
 
     def switch_frame(self, frame_class):
         """Destroys current frame and replaces it with a new one."""
@@ -103,8 +103,8 @@ class App(customtkinter.CTk):
         self.message_center_frame.configure(fg_color=self.frame_left.fg_color)
         self.client_manager_frame.configure(fg_color=self.frame_right.bg_color)
 
-    def change_appearance_mode(self, new_appearance_mode):
-        customtkinter.set_appearance_mode(new_appearance_mode)
+    # def change_appearance_mode(self, new_appearance_mode):
+    #     customtkinter.set_appearance_mode(new_appearance_mode)
 
 class MessageCenter(customtkinter.CTkFrame):
     def __init__(self, master):
@@ -162,27 +162,33 @@ class MessageCenter(customtkinter.CTkFrame):
         self.select_dates_frame.columnconfigure(1, weight=1)
         self.select_dates_frame.columnconfigure(2, weight=1)
 
-        self.possible_dates = customtkinter.CTkTextbox(self.select_dates_frame, fg_color=("white", "gray38"))
+        self.possible_dates = tkinter.Listbox(self.select_dates_frame, activestyle="none", bg="gray38", fg="white", font=("Roboto", -16), highlightthickness=0, highlightbackground= "gray38", bd=0)
+        # self.possible_dates = customtkinter.CTkTextbox(self.select_dates_frame, 
+        #                                                 fg_color=("white", "gray38"),
+        #                                                 text_font=("Roboto", -16))
         self.possible_dates.grid(row=0, column=0, rowspan=4, sticky="nsew", padx=(15, 0), pady=(10, 15))
 
         self.select_button = customtkinter.CTkButton(master=self.select_dates_frame,
                                                 text="Select Date",
                                                 border_width=2,  # <- custom border_width
-                                                fg_color=None)  # <- no fg_color)
+                                                fg_color=None,
+                                                command=self.select_date)  # <- no fg_color)
         self.select_button.grid(row=1, column=1, sticky="")
         self.delete_button = customtkinter.CTkButton(master=self.select_dates_frame,
                                                 text="Remove Date",
                                                 border_width=2,  # <- custom border_width
-                                                fg_color=None)  # <- no fg_color)
+                                                fg_color=None,
+                                                command=self.remove_date)  # <- no fg_color)
         self.delete_button.grid(row=2, column=1, sticky="")
 
-        self.final_dates = customtkinter.CTkTextbox(self.select_dates_frame, fg_color=("white", "gray38"))
+        self.final_dates = tkinter.Listbox(self.select_dates_frame, activestyle="none", bg="gray38", fg="white", font=("Roboto", -16), highlightthickness=0, highlightbackground= "gray38", bd=0)
+        # self.final_dates = customtkinter.CTkTextbox(self.select_dates_frame, fg_color=("white", "gray38"))
         self.final_dates.grid(row=0, column=2, rowspan=4, sticky="nsew", padx=(0, 15), pady=(10, 15))
-
+        self.final_dates_list = [];
         # ============ frame_right ============
 
         self.selected_groups_label = customtkinter.CTkLabel(master=self.frame_right,
-                                                        text="Selected Leads:",
+                                                        text="Filter Selection:",
                                                         text_font=("Roboto Medium", -16, "bold"))
         self.selected_groups_label.grid(row=0, column=2, columnspan=1, pady=(20, 0), padx=(0, 20), sticky="")
 
@@ -194,21 +200,27 @@ class MessageCenter(customtkinter.CTkFrame):
         self.selected_groups_frame.rowconfigure(3, weight=1)
         self.selected_groups_frame.rowconfigure(4, weight=1)
 
-        self.selected_group_1 = customtkinter.CTkCheckBox(master=self.selected_groups_frame,
-                                                     text="Paypal")
-        self.selected_group_1.grid(row=0, column=0, pady=(20, 5), padx=20, sticky="nws")
-        self.selected_group_2 = customtkinter.CTkCheckBox(master=self.selected_groups_frame,
-                                                     text="Venmo")
-        self.selected_group_2.grid(row=1, column=0, pady=5, padx=20, sticky="nws")
-        self.selected_group_3 = customtkinter.CTkCheckBox(master=self.selected_groups_frame,
-                                                     text="Zelle")
-        self.selected_group_3.grid(row=2, column=0, pady=5, padx=20, sticky="nws")
-        self.selected_group_4 = customtkinter.CTkCheckBox(master=self.selected_groups_frame,
-                                                     text="CashApp")
-        self.selected_group_4.grid(row=3, column=0, pady=5, padx=20, sticky="nws")
-        self.selected_group_5 = customtkinter.CTkCheckBox(master=self.selected_groups_frame,
-                                                     text="Credit/Debit")
-        self.selected_group_5.grid(row=4, column=0, pady=(5, 20), padx=20, sticky="nws")
+        self.filter_selection_master = customtkinter.CTkCheckBox(master=self.selected_groups_frame,
+                                                     text="Master Files",
+                                                     command=self.filter_selection,
+                                                     onvalue="on", 
+                                                     offvalue="off")
+        self.filter_selection_master.grid(row=0, column=0, pady=(20, 5), padx=20, sticky="nws")
+        self.filter_selection_client = customtkinter.CTkCheckBox(master=self.selected_groups_frame,
+                                                     text="Client Files",
+                                                     command=self.filter_selection,
+                                                     onvalue="on", 
+                                                     offvalue="off")
+        self.filter_selection_client.grid(row=1, column=0, pady=5, padx=20, sticky="nws")
+        # self.selected_group_3 = customtkinter.CTkCheckBox(master=self.selected_groups_frame,
+        #                                              text="Zelle")
+        # self.selected_group_3.grid(row=2, column=0, pady=5, padx=20, sticky="nws")
+        # self.selected_group_4 = customtkinter.CTkCheckBox(master=self.selected_groups_frame,
+        #                                              text="CashApp")
+        # self.selected_group_4.grid(row=3, column=0, pady=5, padx=20, sticky="nws")
+        # self.selected_group_5 = customtkinter.CTkCheckBox(master=self.selected_groups_frame,
+        #                                              text="Credit/Debit")
+        # self.selected_group_5.grid(row=4, column=0, pady=(5, 20), padx=20, sticky="nws")
 
         self.date_select_label = customtkinter.CTkLabel(master=self.frame_right,
                                                         text="Scheduled Send:",
@@ -281,6 +293,42 @@ class MessageCenter(customtkinter.CTkFrame):
 
     def button_event(self):
         pass
+
+    def filter_selection(self):
+        if (self.filter_selection_master.get() == "off" and self.filter_selection_client.get() == "off"):
+            self.possible_dates.delete(0, 'end')
+
+        if (self.filter_selection_master.get() == "on" and self.filter_selection_client.get() == "off"):
+            self.possible_dates.delete(0, 'end')
+            master_files = os.listdir(os.getcwd() + "/masters")
+            for file in master_files:
+                self.possible_dates.insert('end', file)
+        if (self.filter_selection_client.get() == "on" and self.filter_selection_master.get() == "off"):
+            self.possible_dates.delete(0, 'end')
+            client_files = os.listdir(os.getcwd() + "/clients")
+            for file in client_files:
+                self.possible_dates.insert('end', file)
+        if (self.filter_selection_master.get() == "on" and self.filter_selection_client.get() == "on"):
+            self.possible_dates.delete(0, 'end')
+            master_files = os.listdir(os.getcwd() + "/masters")
+            for file in master_files:
+                self.possible_dates.insert('end', file)
+            client_files = os.listdir(os.getcwd() + "/clients")
+            for file in client_files:
+                self.possible_dates.insert('end', file)
+
+    def select_date(self):
+        self.final_dates_list.append(self.possible_dates.get(self.possible_dates.curselection()))
+        self.update_final_list()
+ 
+    def remove_date(self):
+        self.final_dates_list.remove(self.final_dates.get(self.final_dates.curselection()))
+        self.update_final_list()
+ 
+    def update_final_list(self):
+        self.final_dates.delete(0, 'end')
+        for date in self.final_dates_list:
+            self.final_dates.insert('end', date)
 
     def send_message(self):
         self.master.focus()
