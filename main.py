@@ -167,6 +167,10 @@ class MessageCenter(customtkinter.CTkFrame):
         #                                                 fg_color=("white", "gray38"),
         #                                                 text_font=("Roboto", -16))
         self.possible_dates.grid(row=0, column=0, rowspan=4, sticky="nsew", padx=(15, 0), pady=(10, 15))
+        self.possible_dates_list = []
+        self.possible_dates.bind("<FocusIn>", self.possible_dates_focused)
+        self.possible_dates.bind("<FocusOut>", self.possible_dates_unfocused)
+        self.possible_dates_focus = False
 
         self.select_button = customtkinter.CTkButton(master=self.select_dates_frame,
                                                 text="Select Date",
@@ -180,11 +184,13 @@ class MessageCenter(customtkinter.CTkFrame):
                                                 fg_color=None,
                                                 command=self.remove_date)  # <- no fg_color)
         self.delete_button.grid(row=2, column=1, sticky="")
-
         self.final_dates = tkinter.Listbox(self.select_dates_frame, activestyle="none", bg="gray38", fg="white", font=("Roboto", -16), highlightthickness=0, highlightbackground= "gray38", bd=0)
         # self.final_dates = customtkinter.CTkTextbox(self.select_dates_frame, fg_color=("white", "gray38"))
         self.final_dates.grid(row=0, column=2, rowspan=4, sticky="nsew", padx=(0, 15), pady=(10, 15))
-        self.final_dates_list = [];
+        self.final_dates_list = []
+        self.final_dates.bind("<FocusIn>", self.final_dates_focused)
+        self.final_dates.bind("<FocusOut>", self.final_dates_unfocused)
+        self.final_dates_focus = False
         # ============ frame_right ============
 
         self.selected_groups_label = customtkinter.CTkLabel(master=self.frame_right,
@@ -296,39 +302,75 @@ class MessageCenter(customtkinter.CTkFrame):
 
     def filter_selection(self):
         if (self.filter_selection_master.get() == "off" and self.filter_selection_client.get() == "off"):
-            self.possible_dates.delete(0, 'end')
-
+            self.possible_dates_list = []
         if (self.filter_selection_master.get() == "on" and self.filter_selection_client.get() == "off"):
-            self.possible_dates.delete(0, 'end')
-            master_files = os.listdir(os.getcwd() + "/masters")
-            for file in master_files:
-                self.possible_dates.insert('end', file)
+            self.possible_dates_list = []
+            self.populate_masters()
         if (self.filter_selection_client.get() == "on" and self.filter_selection_master.get() == "off"):
-            self.possible_dates.delete(0, 'end')
-            client_files = os.listdir(os.getcwd() + "/clients")
-            for file in client_files:
-                self.possible_dates.insert('end', file)
+            self.possible_dates_list = []
+            self.populate_clients()
         if (self.filter_selection_master.get() == "on" and self.filter_selection_client.get() == "on"):
-            self.possible_dates.delete(0, 'end')
-            master_files = os.listdir(os.getcwd() + "/masters")
-            for file in master_files:
-                self.possible_dates.insert('end', file)
-            client_files = os.listdir(os.getcwd() + "/clients")
-            for file in client_files:
-                self.possible_dates.insert('end', file)
+            self.possible_dates_list = []
+            self.populate_masters()
+            self.populate_clients()
+        self.update_final_list()
+        self.update_possible_list()
+        
+
+    def populate_clients(self):
+        client_files = os.listdir(os.getcwd() + "/clients")
+        for file in client_files:
+            self.possible_dates_list.append(file)
+
+    def populate_masters(self):
+        master_files = os.listdir(os.getcwd() + "/masters")
+        for file in master_files:
+            self.possible_dates_list.append(file)
+
+    def possible_dates_focused(self, event):
+        self.possible_dates_focus = True;
+    def possible_dates_unfocused(self, event):
+        self.possible_dates_focus = False;
+    def final_dates_focused(self, event):
+        self.final_dates_focus = True;
+    def final_dates_unfocused(self, event):
+        self.final_dates_focus = False;
+
 
     def select_date(self):
-        self.final_dates_list.append(self.possible_dates.get(self.possible_dates.curselection()))
-        self.update_final_list()
+        if self.possible_dates_focus == True and self.final_dates_focus == False:
+            self.final_dates_list.append(self.possible_dates.get(self.possible_dates.curselection()))
+            self.possible_dates_list.remove(self.possible_dates.get(self.possible_dates.curselection()))
+            self.update_final_list()
+            self.update_possible_list()
  
     def remove_date(self):
-        self.final_dates_list.remove(self.final_dates.get(self.final_dates.curselection()))
-        self.update_final_list()
+        if self.final_dates_focus == True and self.possible_dates_focus == False:
+            self.possible_dates_list.append(self.final_dates.get(self.final_dates.curselection()))
+            self.final_dates_list.remove(self.final_dates.get(self.final_dates.curselection()))
+            self.update_final_list()
+            self.update_possible_list()
  
+    def update_possible_list(self):
+        self.possible_dates.delete(0, 'end')
+        for date in self.possible_dates_list:
+            if date not in self.final_dates_list:
+                self.possible_dates.insert('end', date)
+
     def update_final_list(self):
         self.final_dates.delete(0, 'end')
-        for date in self.final_dates_list:
-            self.final_dates.insert('end', date)
+        if (self.filter_selection_master.get() == "off" and self.filter_selection_client.get() == "off"):
+            self.final_dates_list = []
+        if (self.filter_selection_master.get() == "on" and self.filter_selection_client.get() == "off"):
+            for date in self.final_dates_list:
+                if date in os.listdir(os.getcwd() + "/clients"):
+                    self.final_dates_list.remove(date)
+        if (self.filter_selection_client.get() == "on" and self.filter_selection_master.get() == "off"):
+            for date in self.final_dates_list:
+                if date in os.listdir(os.getcwd() + "/masters"):
+                    self.final_dates_list.remove(date)
+        for _date in self.final_dates_list:
+            self.final_dates.insert('end', _date)
 
     def send_message(self):
         self.master.focus()
