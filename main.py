@@ -303,12 +303,24 @@ class MessageCenter(customtkinter.CTkFrame):
     def filter_selection(self):
         if (self.filter_selection_master.get() == "off" and self.filter_selection_client.get() == "off"):
             self.possible_dates_list = []
+            self.final_dates_list = []
         if (self.filter_selection_master.get() == "on" and self.filter_selection_client.get() == "off"):
             self.possible_dates_list = []
             self.populate_masters()
-        if (self.filter_selection_client.get() == "on" and self.filter_selection_master.get() == "off"):
+            temp_final_list = []
+            for date in self.final_dates_list:
+                if date not in os.listdir(os.getcwd() + "/clients"):
+                    temp_final_list.append(date)
+            self.final_dates_list = temp_final_list
+        if (self.filter_selection_master.get() == "off" and self.filter_selection_client.get() == "on"): 
+            
             self.possible_dates_list = []
             self.populate_clients()
+            temp_final_list = []
+            for date in self.final_dates_list:
+                if date not in os.listdir(os.getcwd() + "/masters"):
+                   temp_final_list.append(date)
+            self.final_dates_list = temp_final_list     
         if (self.filter_selection_master.get() == "on" and self.filter_selection_client.get() == "on"):
             self.possible_dates_list = []
             self.populate_masters()
@@ -339,14 +351,16 @@ class MessageCenter(customtkinter.CTkFrame):
 
     def select_date(self):
         if self.possible_dates_focus == True and self.final_dates_focus == False:
-            self.final_dates_list.append(self.possible_dates.get(self.possible_dates.curselection()))
+            if self.possible_dates.get(self.possible_dates.curselection()) not in self.final_dates_list:
+                self.final_dates_list.append(self.possible_dates.get(self.possible_dates.curselection()))
             self.possible_dates_list.remove(self.possible_dates.get(self.possible_dates.curselection()))
             self.update_final_list()
             self.update_possible_list()
  
     def remove_date(self):
         if self.final_dates_focus == True and self.possible_dates_focus == False:
-            self.possible_dates_list.append(self.final_dates.get(self.final_dates.curselection()))
+            if self.final_dates.get(self.final_dates.curselection()) not in self.possible_dates_list:
+                self.possible_dates_list.append(self.final_dates.get(self.final_dates.curselection()))
             self.final_dates_list.remove(self.final_dates.get(self.final_dates.curselection()))
             self.update_final_list()
             self.update_possible_list()
@@ -359,18 +373,8 @@ class MessageCenter(customtkinter.CTkFrame):
 
     def update_final_list(self):
         self.final_dates.delete(0, 'end')
-        if (self.filter_selection_master.get() == "off" and self.filter_selection_client.get() == "off"):
-            self.final_dates_list = []
-        if (self.filter_selection_master.get() == "on" and self.filter_selection_client.get() == "off"):
-            for date in self.final_dates_list:
-                if date in os.listdir(os.getcwd() + "/clients"):
-                    self.final_dates_list.remove(date)
-        if (self.filter_selection_client.get() == "on" and self.filter_selection_master.get() == "off"):
-            for date in self.final_dates_list:
-                if date in os.listdir(os.getcwd() + "/masters"):
-                    self.final_dates_list.remove(date)
-        for _date in self.final_dates_list:
-            self.final_dates.insert('end', _date)
+        for date in self.final_dates_list:
+            self.final_dates.insert('end', date)
 
     def send_message(self):
         self.master.focus()
@@ -467,7 +471,8 @@ class ClientManager(customtkinter.CTkFrame):
         self.frame_right.columnconfigure((0, 1), weight=1)
         self.frame_right.columnconfigure(2, weight=0)
 
-        self.frame_info = customtkinter.CTkFrame(master=self.frame_right)
+        self.frame_info = customtkinter.CTkFrame(master=self.frame_right,
+                                                 corner_radius=10)
         self.frame_info.grid(row=0, column=0, columnspan=2, rowspan=9, pady=20, padx=20, sticky="nsew")
         # ============ frame_info ============
 
@@ -496,6 +501,27 @@ class ClientManager(customtkinter.CTkFrame):
         self.client_list_scrollbar.grid(row=1, column=0, sticky="nse", pady=(15, 25), padx=(0, 15))
         self.client_list.configure(yscrollcommand=self.client_list_scrollbar.set)
 
+        self.utility_frame = customtkinter.CTkFrame(master=self.frame_info,
+                                                    corner_radius=10,
+                                                    fg_color=self.frame_info.fg_color)
+        self.utility_frame.grid(row=2, column=0, sticky="nsew")
+        self.utility_frame.rowconfigure(0, weight=1)
+        self.utility_frame.columnconfigure((0, 1, 2, 3, 4, 5), weight=1)
+
+        self.edit_button = customtkinter.CTkButton(master=self.utility_frame,
+                                                    text="Edit",
+                                                    border_width=2,
+                                                    text_font=("Roboto Medium", -14, "bold"),
+                                                    fg_color=None,
+                                                    command=self.edit_client_list)
+        self.edit_button.grid(row=2, column=2, sticky="nsew", padx=15, pady=(0, 15))
+        self.save_button = customtkinter.CTkButton(master=self.utility_frame,
+                                                    text="Save/Update",
+                                                    border_width=2,
+                                                    text_font=("Roboto Medium", -14, "bold"),
+                                                    fg_color=None,
+                                                    command=self.save_client_list)
+        self.save_button.grid(row=2, column=3, sticky="nsew", padx=15, pady=(0, 15))
         # ============ frame_right ============
         self.upload_file_label = customtkinter.CTkLabel(master=self.frame_right,
                                                         text="Update Client List:",
@@ -563,8 +589,34 @@ class ClientManager(customtkinter.CTkFrame):
             self.client_list.configure(state="normal")
             self.client_list.delete('0.0', 'end')
             self.client_list.insert('0.0', file_content)    
-            self.client_list.configure(state="disabled")       
-            
+            self.edit_button.configure(text="Edit")
+            self.client_list.configure(state="disabled")     
+    
+    def edit_client_list(self):
+        if self.client_list.cget("state") == "disabled":
+            self.client_list.configure(state="normal")
+            self.edit_button.configure(text="Cancel")
+        else:
+            self.client_list.configure(state="disabled")
+            self.edit_button.configure(text="Edit")
+    
+        if self.client_list.cget("state") == "normal":
+            self.save_button.configure(fg_color="#B66A58")
+        else:
+            self.save_button.configure(fg_color=self.edit_button.fg_color)
+
+    def save_client_list(self):
+        self.save_button.configure(fg_color=self.edit_button.fg_color)
+        client_list = self.client_list.get("0.0", "end")
+        client_surname = self.client_list_label.cget("text").split(": ")[-1]
+        if client_surname.strip() != "Client List: ".strip():
+            filepath = os.getcwd() + "/clients/" + client_surname
+            with open(filepath, 'w') as f:
+                f.write(client_list)
+            self.edit_button.configure(text="Edit")
+            self.client_list.configure(state="disabled")
+
+
 if __name__ == "__main__":
     app = App()
     app.mainloop()
