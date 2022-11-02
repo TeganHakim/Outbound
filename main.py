@@ -2,19 +2,19 @@ import tkinter
 from tkinter import filedialog
 import tkinter.messagebox
 import customtkinter
-import datetime, re, os
 import base64
+import datetime, re, os, math
 
 customtkinter.set_appearance_mode("Dark")
 customtkinter.set_default_color_theme("blue")
 # Tkinter App
 class App(customtkinter.CTk):
     # Dimensions
-    WIDTH = 1200
-    HEIGHT = 720
+    WIDTH = 1350
+    HEIGHT = 850
 
-    MINWIDTH = 860
-    MINHEIGHT = 700
+    MINWIDTH = 1100
+    MINHEIGHT = 800
 
     def __init__(self):
         super().__init__()
@@ -116,7 +116,7 @@ class MessageCenter(customtkinter.CTkFrame):
         self.frame_right.grid(row=0, column=0, sticky="nswe")
         # configure grid layout (3x7)
         self.frame_right.rowconfigure((0, 1, 2, 3), weight=1)
-        self.frame_right.rowconfigure(7, weight=10)
+        self.frame_right.rowconfigure((6,7), weight=1)
         self.frame_right.columnconfigure((0, 1), weight=1)
         self.frame_right.columnconfigure(2, weight=0)
 
@@ -138,7 +138,7 @@ class MessageCenter(customtkinter.CTkFrame):
                                                 fg_color=("white", "gray38"),
                                                 text_font=("Roboto", -14))
         self.message.grid(row=1, column=0, sticky="nsew", padx=15, pady=(10, 15))
-
+        
         self.send_filter_frame = customtkinter.CTkFrame(master=self.frame_right, corner_radius=10)
         self.send_filter_frame.grid(row=4, column=0, columnspan=2, rowspan=5, sticky="nsew", padx=15, pady=(0, 15))
 
@@ -200,11 +200,11 @@ class MessageCenter(customtkinter.CTkFrame):
 
         self.selected_groups_frame = customtkinter.CTkFrame(master=self.frame_right)
         self.selected_groups_frame.grid(row=1, column=2, pady=10, padx=(0, 20), sticky="nsew")
-        self.selected_groups_frame.rowconfigure(0, weight=1)
-        self.selected_groups_frame.rowconfigure(1, weight=1)
-        self.selected_groups_frame.rowconfigure(2, weight=1)
-        self.selected_groups_frame.rowconfigure(3, weight=1)
-        self.selected_groups_frame.rowconfigure(4, weight=1)
+        # self.selected_groups_frame.rowconfigure(0, weight=1)
+        # self.selected_groups_frame.rowconfigure(1, weight=1)
+        # self.selected_groups_frame.rowconfigure(2, weight=1)
+        # self.selected_groups_frame.rowconfigure(3, weight=1)
+        # self.selected_groups_frame.rowconfigure(4, weight=1)
 
         self.filter_selection_master = customtkinter.CTkCheckBox(master=self.selected_groups_frame,
                                                      text="Master Files",
@@ -217,7 +217,7 @@ class MessageCenter(customtkinter.CTkFrame):
                                                      command=self.filter_selection,
                                                      onvalue="on", 
                                                      offvalue="off")
-        self.filter_selection_client.grid(row=1, column=0, pady=5, padx=20, sticky="nws")
+        self.filter_selection_client.grid(row=1, column=0, pady=(5, 20), padx=20, sticky="nws")
         # self.selected_group_3 = customtkinter.CTkCheckBox(master=self.selected_groups_frame,
         #                                              text="Zelle")
         # self.selected_group_3.grid(row=2, column=0, pady=5, padx=20, sticky="nws")
@@ -228,12 +228,13 @@ class MessageCenter(customtkinter.CTkFrame):
         #                                              text="Credit/Debit")
         # self.selected_group_5.grid(row=4, column=0, pady=(5, 20), padx=20, sticky="nws")
 
+
         self.date_select_label = customtkinter.CTkLabel(master=self.frame_right,
                                                         text="Scheduled Send:",
                                                         text_font=("Roboto Medium", -16, "bold"))
-        self.date_select_label.grid(row=3, column=2, columnspan=1, pady=(20, 0), padx=(0, 20), sticky="")
+        self.date_select_label.grid(row=2, column=2, columnspan=1, pady=(10, 0), padx=(0, 20), sticky="")
         self.date_select_frame = customtkinter.CTkFrame(master=self.frame_right)
-        self.date_select_frame.grid(row=4, column=2, pady=10, padx=(0, 20), sticky="nsew")
+        self.date_select_frame.grid(row=3, column=2, pady=10, padx=(0, 20), sticky="nsew")
         self.date_select_frame.rowconfigure((1, 2, 3, 4), weight=1)
         self.date_select_frame.columnconfigure((0, 1), weight=1)
         self.month = customtkinter.CTkComboBox(master=self.date_select_frame,
@@ -290,12 +291,43 @@ class MessageCenter(customtkinter.CTkFrame):
                                                     offvalue=0,
                                                     text_font=("Roboto Medium", -16))
         self.instant_switch.grid(row=5, column=0, pady=(5, 10), padx=20, sticky="we")
+
+        self.statistics_label = customtkinter.CTkLabel(master=self.frame_right,
+                                                        text="Statistics",
+                                                        text_font=("Roboto Medium", -16))
+        self.statistics_label.grid(row=5, column=2, columnspan=1, pady=(5, 0), padx=(0, 20), sticky="")
+
+        self.statistics_frame = customtkinter.CTkFrame(master=self.frame_right,
+                                                 corner_radius=10,
+                                                 fg_color=self.frame_right.fg_color)
+        self.statistics_frame.grid(row=6, column=2, pady=(5, 0), padx=(0, 20), sticky="news")
+
+        self.statistics_frame.rowconfigure(0, weight=1)
+        self.statistics_frame.columnconfigure(0, weight=1)
+
+        self.statistics = customtkinter.CTkTextbox(master=self.statistics_frame,
+                                                    height=100,
+                                                    fg_color=self.frame_right.bg_color,
+                                                    text_font=("Roboto Medium", -13))
+        self.statistics.grid(row=0, column=0, columnspan=1, rowspan=2, pady=(5, 0), padx=(0, 0), sticky="nsew")
+
+        self.statistics_scrollbar = customtkinter.CTkScrollbar(self.statistics_frame, 
+                                                                scrollbar_color=("white", "grey38"),
+                                                                fg_color=self.frame_right.bg_color,
+                                                                corner_radius=10,
+                                                                command=self.statistics.yview)
+        self.statistics_scrollbar.grid(row=0, column=0, sticky="nse", pady=(5, 3), padx=(0, 0))
+        self.statistics.configure(yscrollcommand=self.statistics_scrollbar.set)
+
+        self.update_statistics()
+        self.statistics.configure(state="disabled")
+
         self.send_message = customtkinter.CTkButton(master=self.frame_right,
                                                 text="Send Message",
                                                 border_width=2,  # <- custom border_width
                                                 fg_color=None,  # <- no fg_color
                                                 command=self.send_message)
-        self.send_message.grid(row=8, column=2, columnspan=1, pady=20, padx=20, sticky="we")
+        self.send_message.grid(row=8, column=2, columnspan=1, pady=20, padx=(0, 20), sticky="we")
 
     def button_event(self):
         pass
@@ -312,8 +344,7 @@ class MessageCenter(customtkinter.CTkFrame):
                 if date not in os.listdir(os.getcwd() + "/clients"):
                     temp_final_list.append(date)
             self.final_dates_list = temp_final_list
-        if (self.filter_selection_master.get() == "off" and self.filter_selection_client.get() == "on"): 
-            
+        if (self.filter_selection_master.get() == "off" and self.filter_selection_client.get() == "on"):             
             self.possible_dates_list = []
             self.populate_clients()
             temp_final_list = []
@@ -327,6 +358,7 @@ class MessageCenter(customtkinter.CTkFrame):
             self.populate_clients()
         self.update_final_list()
         self.update_possible_list()
+        self.update_statistics()
         
 
     def populate_clients(self):
@@ -348,7 +380,6 @@ class MessageCenter(customtkinter.CTkFrame):
     def final_dates_unfocused(self, event):
         self.final_dates_focus = False;
 
-
     def select_date(self):
         if self.possible_dates_focus == True and self.final_dates_focus == False:
             if self.possible_dates.get(self.possible_dates.curselection()) not in self.final_dates_list:
@@ -356,6 +387,7 @@ class MessageCenter(customtkinter.CTkFrame):
             self.possible_dates_list.remove(self.possible_dates.get(self.possible_dates.curselection()))
             self.update_final_list()
             self.update_possible_list()
+            self.update_statistics()
  
     def remove_date(self):
         if self.final_dates_focus == True and self.possible_dates_focus == False:
@@ -364,6 +396,7 @@ class MessageCenter(customtkinter.CTkFrame):
             self.final_dates_list.remove(self.final_dates.get(self.final_dates.curselection()))
             self.update_final_list()
             self.update_possible_list()
+            self.update_statistics()
  
     def update_possible_list(self):
         self.possible_dates.delete(0, 'end')
@@ -456,6 +489,32 @@ class MessageCenter(customtkinter.CTkFrame):
             self.time.insert(0, time.strftime("%I:%M"))
             self.am_pm.set(time.strftime("%p"))
 
+    def update_statistics(self):
+        self.statistics.configure(state="normal")
+        self.statistics.delete("0.0", "end")
+        message_length = len(self.message.get("0.0", "end")) - 1
+        total_files = len(self.final_dates_list)
+        total_clients = 0
+        for file in self.final_dates_list:
+            filename = os.getcwd() + self.getSubDir(file) + file
+            total_clients += len(open(filename, "r").readlines())
+        num_messages = 1 + math.floor(message_length/160)
+        approx_time = round((num_messages*total_clients)/50, 2) 
+        message_rate = 0.0076
+        approx_price = round((num_messages*total_clients) * message_rate, 2)
+        message = "Message Length:\n- {} characters\n\nTotal Recieving Clients:\n- {} clients ({} files)\n\nApproximate Send Time:\n- {} seconds\n\nApproximate Price:\n- ${}".format(message_length, total_clients, total_files, approx_time, approx_price)
+        self.statistics.insert("0.0", message)
+        self.statistics.configure(state="disabled")
+
+    def getSubDir(self, client_surname):
+        for file in os.listdir(os.getcwd() + "/masters"):
+            if client_surname == file:
+                return "/masters/"
+        for file in os.listdir(os.getcwd() + "/clients"):
+            if client_surname == file:
+                return "/clients/"
+        return "/clients/"
+
 class ClientManager(customtkinter.CTkFrame):
     def __init__(self, master):
         customtkinter.CTkFrame.__init__(self, master)
@@ -511,14 +570,14 @@ class ClientManager(customtkinter.CTkFrame):
         self.edit_button = customtkinter.CTkButton(master=self.utility_frame,
                                                     text="Edit",
                                                     border_width=2,
-                                                    text_font=("Roboto Medium", -14, "bold"),
+                                                    text_font=("Roboto Medium", -14),
                                                     fg_color=None,
                                                     command=self.edit_client_list)
         self.edit_button.grid(row=2, column=2, sticky="nsew", padx=15, pady=(0, 15))
         self.save_button = customtkinter.CTkButton(master=self.utility_frame,
                                                     text="Save/Update",
                                                     border_width=2,
-                                                    text_font=("Roboto Medium", -14, "bold"),
+                                                    text_font=("Roboto Medium", -14),
                                                     fg_color=None,
                                                     command=self.save_client_list)
         self.save_button.grid(row=2, column=3, sticky="nsew", padx=15, pady=(0, 15))
@@ -532,13 +591,27 @@ class ClientManager(customtkinter.CTkFrame):
                                                 border_width=2,  # <- custom border_width
                                                 fg_color=None,  # <- no fg_color
                                                 command=self.upload_file)
-        self.upload_file_button.grid(row=1, column=2, pady=0, padx=(0, 20), sticky="new")
+        self.upload_file_button.grid(row=1, column=2, pady=(5, 0), padx=(0, 20), sticky="new")
 
+        self.view_file_grammar_label = customtkinter.CTkLabel(master=self.frame_right,
+                                                        text="(leadName mm/dd/yyyy)",
+                                                        text_font=("Roboto Medium", -12, "italic"))
+        self.view_file_grammar_label.grid(row=3, column=2, pady=(0, 5), padx=(0, 20), sticky="new")
+        self.view_file_label = customtkinter.CTkLabel(master=self.frame_right,
+                                                        text="View List:",
+                                                        text_font=("Roboto Medium", -16, "bold"))
+        self.view_file_label.grid(row=4, column=2, columnspan=1, pady=(5, 0), padx=(0, 20), sticky="")
+        self.view_file = tkinter.Listbox(self.frame_right, activestyle="none", bg="gray38", fg="white", font=("Roboto", -16), highlightthickness=0, highlightbackground= "gray38", bd=0)
+        self.view_file.grid(row=5, column=2, pady=(5, 0), padx=(0, 20), sticky="news")
+        self.view_file_list = []
+        self.populate_view_file()
+        self.update_view_file()
+        self.view_file.bind("<ButtonRelease-1>", self.view_file_clicked)
 
         self.filter_groups_label = customtkinter.CTkLabel(master=self.frame_right,
-                                                        text="Filter by Group:",
+                                                        text="Statistics:",
                                                         text_font=("Roboto Medium", -16, "bold"))
-        self.filter_groups_label.grid(row=6, column=2, columnspan=1, pady=(20, 0), padx=(0, 20), sticky="")
+        self.filter_groups_label.grid(row=6, column=2, columnspan=1, pady=(10, 0), padx=(0, 20), sticky="")
 
         self.filter_groups_frame = customtkinter.CTkFrame(master=self.frame_right)
         self.filter_groups_frame.grid(row=7, column=2, pady=10, padx=(0, 20), sticky="nsew")
@@ -562,14 +635,14 @@ class ClientManager(customtkinter.CTkFrame):
         self.filter_group_4.grid(row=3, column=0, pady=5, padx=20, sticky="nws")
         self.filter_group_5 = customtkinter.CTkCheckBox(master=self.filter_groups_frame,
                                                      text="Credit/Debit")
-        self.filter_group_5.grid(row=4, column=0, pady=(5, 20), padx=20, sticky="nws")
+        self.filter_group_5.grid(row=4, column=0, pady=(5, 10), padx=20, sticky="nws")
 
         self.button_5 = customtkinter.CTkButton(master=self.frame_right,
                                                 text="CTkButton",
                                                 border_width=2,  # <- custom border_width
                                                 fg_color=None,  # <- no fg_color
                                                 command=self.button_event)
-        self.button_5.grid(row=8, column=2, columnspan=1, pady=20, padx=(0, 20), sticky="we")
+        self.button_5.grid(row=8, column=2, columnspan=1, pady=15, padx=(0, 20), sticky="we")
 
     def button_event(self):
         print("Button pressed")
@@ -591,7 +664,7 @@ class ClientManager(customtkinter.CTkFrame):
             self.client_list.insert('0.0', file_content)    
             self.edit_button.configure(text="Edit")
             self.client_list.configure(state="disabled")     
-    
+
     def edit_client_list(self):
         if self.client_list.cget("state") == "disabled":
             self.client_list.configure(state="normal")
@@ -610,12 +683,43 @@ class ClientManager(customtkinter.CTkFrame):
         client_list = self.client_list.get("0.0", "end")
         client_surname = self.client_list_label.cget("text").split(": ")[-1]
         if client_surname.strip() != "Client List: ".strip():
-            filepath = os.getcwd() + "/clients/" + client_surname
+            filepath = os.getcwd() + self.getSubDir(client_surname) + client_surname
             with open(filepath, 'w') as f:
                 f.write(client_list)
             self.edit_button.configure(text="Edit")
             self.client_list.configure(state="disabled")
 
+    def populate_view_file(self):
+        master_files = os.listdir(os.getcwd() + "/masters")
+        for file in master_files:
+            self.view_file_list.append(file)
+        client_files = os.listdir(os.getcwd() + "/clients")
+        for file in client_files:
+            self.view_file_list.append(file)
+    
+    def update_view_file(self):
+        for file in self.view_file_list:
+            self.view_file.insert("end", file)
+    
+    def view_file_clicked(self, event):
+        client_surname = self.view_file.get(self.view_file.curselection())
+        original_filepath = os.getcwd() + self.getSubDir(client_surname) + client_surname
+        file_content = open(original_filepath, "r").read()        
+        self.client_list_label.configure(text="Client List: " + client_surname)
+        self.client_list.configure(state="normal")
+        self.client_list.delete('0.0', 'end')
+        self.client_list.insert('0.0', file_content)    
+        self.edit_button.configure(text="Edit")
+        self.client_list.configure(state="disabled")   
+
+    def getSubDir(self, client_surname):
+        for file in os.listdir(os.getcwd() + "/masters"):
+            if client_surname == file:
+                return "/masters/"
+        for file in os.listdir(os.getcwd() + "/clients"):
+            if client_surname == file:
+                return "/clients/"
+        return "/clients/"
 
 if __name__ == "__main__":
     app = App()
