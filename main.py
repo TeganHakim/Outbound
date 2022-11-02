@@ -4,6 +4,7 @@ import tkinter.messagebox
 import customtkinter
 import base64
 import datetime, re, os, math
+import vonage_task
 
 customtkinter.set_appearance_mode("Dark")
 customtkinter.set_default_color_theme("blue")
@@ -372,13 +373,13 @@ class MessageCenter(customtkinter.CTkFrame):
             self.possible_dates_list.append(file)
 
     def possible_dates_focused(self, event):
-        self.possible_dates_focus = True;
+        self.possible_dates_focus = True
     def possible_dates_unfocused(self, event):
-        self.possible_dates_focus = False;
+        self.possible_dates_focus = False
     def final_dates_focused(self, event):
-        self.final_dates_focus = True;
+        self.final_dates_focus = True
     def final_dates_unfocused(self, event):
-        self.final_dates_focus = False;
+        self.final_dates_focus = False
 
     def select_date(self):
         if self.possible_dates_focus == True and self.final_dates_focus == False:
@@ -411,6 +412,14 @@ class MessageCenter(customtkinter.CTkFrame):
 
     def send_message(self):
         self.master.focus()
+        if (self.instant.get() == 1):
+            if len(self.final_dates_list) > 0 and len(self.message.get("0.0", "end")) > 0:
+                receiving_clients = []
+                for file in self.final_dates_list:
+                    filename = os.getcwd() + self.getSubDir(file) + file
+                    receiving_clients += open(filename, "r").read().splitlines()
+                response = vonage_task.send_sms(receiving_clients, self.message.get("0.0", "end"))
+                print(response)
         
     def month_changed(self, event):
         time = datetime.datetime.strptime((datetime.datetime.now().strftime("%H:%M")), "%H:%M")
@@ -425,7 +434,7 @@ class MessageCenter(customtkinter.CTkFrame):
     def day_changed(self, event):
         time = datetime.datetime.strptime((datetime.datetime.now().strftime("%H:%M")), "%H:%M")
         if int(event) != int(datetime.datetime.now().day):
-            self.instant_switch.deselect();
+            self.instant_switch.deselect()
             self.instant.set(0)
         else:
             if str(self.month.get()) == str(datetime.datetime.now().strftime("%B")) and int(self.year.get()) == int(datetime.datetime.now().year and str(self.time.get()) == str(time.strftime("%I:%M")) and str(self.am_pm.get()) == str(time.strftime("%p"))):
