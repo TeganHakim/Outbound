@@ -1,14 +1,15 @@
-# Author: Tegan Hakim
+# Author: Outward Industries
 # Build: pyinstaller --onefile "main.py"
 
-# Import API and environment libraries
-import vonage
-from dotenv import load_dotenv
-import os
+# Import libraries to access Vonage API and environment variables
+import vonage 
+from dotenv import load_dotenv 
+import os 
 
 # Initialize environment variables
 load_dotenv()
 
+# Send a SMS message to all recipients in <client_list>
 def send_sms(client_list, message, type="text"):
     # Setup Vonage Client Rest API
     client = vonage.Client(key=os.getenv("CLIENT_API_KEY"), secret=os.getenv("SECRET_API_KEY"))
@@ -16,7 +17,6 @@ def send_sms(client_list, message, type="text"):
 
     # Send a SMS message to all recipients
     for client in client_list:
-        print(client)
         responseData = sms.send_message(
             {
                 "from": os.getenv('VIRTUAL_NUMBER'),
@@ -26,7 +26,8 @@ def send_sms(client_list, message, type="text"):
             }
         )
 
-        # Check for errors
+        # Catch error upon SMS response
         if responseData["messages"][0]["status"] != "0":
             return f"Message failed with error: {responseData['messages'][0]['error-text']}"
+            
     return "Message sent successfully."
