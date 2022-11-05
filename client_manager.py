@@ -1,8 +1,9 @@
 # Import libraries for tkinter GUI and system utilities
 import tkinter
 import tkinter.messagebox
+from tkinter import filedialog
 import customtkinter
-import os
+import base64, os
 from util import getSubDir
 
 # ==================== #

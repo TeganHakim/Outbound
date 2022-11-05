@@ -17,17 +17,17 @@ def send_sms(client_list, message, type="text"):
 
     # Send a SMS message to all recipients
     for client in client_list:
-        responseData = sms.send_message(
-            {
-                "from": os.getenv('VIRTUAL_NUMBER'),
-                "to": "1" + client, # 1+ is required for US numbers
-                "text": message,
-                "type": type,
-            }
-        )
-
+        if client != "":
+            responseData = sms.send_message(
+                {
+                    "from": os.getenv('VIRTUAL_NUMBER'),
+                    "to": "1" + client, # 1+ is required for US numbers
+                    "text": message,
+                    "type": type,
+                }
+            )
         # Catch error upon SMS response
         if responseData["messages"][0]["status"] != "0":
             return f"Message failed with error: {responseData['messages'][0]['error-text']}"
-            
+
     return "Message sent successfully."

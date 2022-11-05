@@ -1,7 +1,7 @@
 # Import libraries to access system files
 import os
 
-def getSubDir(self, client_surname):
+def getSubDir(client_surname):
         for file in os.listdir(os.getcwd() + "/masters"):
             if client_surname == file:
                 return "/masters/"
