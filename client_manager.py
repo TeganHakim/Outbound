@@ -54,6 +54,7 @@ class ClientManager(customtkinter.CTkFrame):
         self.client_list.grid(row = 1, column = 0, sticky = "nsew", padx = 15, pady = (10, 15))
         # Initialize as read-only 
         self.client_list.configure(state = "disabled")
+        self.file_open = False
 
         # Configure client list scrollbar
         self.client_list_scrollbar = customtkinter.CTkScrollbar(master = self.client_list_frame, scrollbar_color = self.frame_right.bg_color, fg_color = ("white", "gray38"), corner_radius = 10, command = self.client_list.yview)
@@ -130,8 +131,10 @@ class ClientManager(customtkinter.CTkFrame):
         self.filter_group_4.grid(row = 3, column=0, pady=5, padx=20, sticky="nws")
         self.filter_group_5 = customtkinter.CTkCheckBox(master=self.filter_groups_frame, text="Credit/Debit")
         self.filter_group_5.grid(row = 4, column=0, pady=(5, 10), padx=20, sticky="nws")
-        self.button_5 = customtkinter.CTkButton(master=self.frame_right, text="CTkButton", border_width=2, fg_color=None)
-        self.button_5.grid(row = 8, column = 2, columnspan=1, pady=15, padx=(0, 20), sticky="we")
+
+        # Clear all button
+        self.clear = customtkinter.CTkButton(master = self.frame_right, text = "Clear File", border_width = 2, fg_color = None, command = self.clear_file)
+        self.clear.grid(row = 8, column = 2, columnspan = 1, pady = 15, padx = (0, 20), sticky = "ew")
          
         if self.config["client_manager"]["filename"] != "":
             self.file_viewer(self.config["client_manager"]["filename"])
@@ -153,10 +156,21 @@ class ClientManager(customtkinter.CTkFrame):
             self.client_list_label.configure(text="Client List: " + client_surname)
             self.client_list.configure(state="normal")
             self.client_list.delete('0.0', 'end')
-            self.client_list.insert('0.0', file_content)    
+            self.client_list.insert('0.0', file_content)  
+            self.file_open = True  
             self.edit_button.configure(text="Edit")
             self.client_list.configure(state="disabled")     
 
+    # Clear file
+    def clear_file(self):
+        self.client_list.configure(state = "normal")
+        self.client_list.delete('0.0', 'end')
+        self.client_list.configure(state = "disabled")
+        self.file_open = False
+        self.edit_button.configure(text = "Edit")
+        self.client_list_label.configure(text = "Client List:")
+        self.view_file.selection_clear(0, 'end')
+        
     # Edit clientel list
     def edit_client_list(self):
         if self.client_list.cget("state") == "disabled":
@@ -208,12 +222,16 @@ class ClientManager(customtkinter.CTkFrame):
         self.client_list_label.configure(text = "Client List: " + client_surname)
         self.client_list.configure(state = "normal")
         self.client_list.delete('0.0', 'end')
-        self.client_list.insert('0.0', file_content)    
+        self.client_list.insert('0.0', file_content)   
+        self.file_open = True 
         self.edit_button.configure(text = "Edit")
         self.client_list.configure(state = "disabled")   
 
     def save_data(self):
-        self.config["client_manager"]["filename"] = self.client_list_label.cget("text").split(": ")[-1]
+        if self.file_open:
+            self.config["client_manager"]["filename"] = self.client_list_label.cget("text").split(": ")[-1]
+        else:
+            self.config["client_manager"]["filename"] = ""
         data = toml.dumps(self.config)
         with open("config.toml", "w") as f:
             f.write(data)

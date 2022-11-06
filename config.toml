@@ -12,4 +12,4 @@ am_pm = "AM"
 instant = 1
 
 [client_manager]
-filename = "Client List:"
+filename = ""
