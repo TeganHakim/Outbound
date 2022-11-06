@@ -1,0 +1,15 @@
+[message_center]
+message = "\n"
+possible_dates = []
+final_dates = []
+master_select = "off"
+client_select = "off"
+month = "November"
+day = "6"
+year = "2022"
+time = ""
+am_pm = "AM"
+instant = 1
+
+[client_manager]
+filename = "Client List:"

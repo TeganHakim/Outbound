@@ -23,7 +23,6 @@ class App(customtkinter.CTk):
     # Initiliaze tkinter GUI window application
     def __init__(self):
         super().__init__()
-
         # Basic window setup
         self.title("Outbound v1.0")
         self.geometry(f"{App.WIDTH}x{App.HEIGHT}")
@@ -63,7 +62,7 @@ class App(customtkinter.CTk):
 
         # Sidebar Message Center button
         self.message_center_button = customtkinter.CTkButton(master=self.message_center_frame, text="Message Center", command = self.message_center)
-        self.message_center_button.grid(row=2, column=0, pady=10, padx=20)
+        self.message_center_button.grid(row = 2, column = 0, pady = 10, padx = 20)
         
         # Sidebar frame for Client Manager button
         self.client_manager_frame = customtkinter.CTkFrame(master = self.frame_left, width = 180, corner_radius = 0, fg_color = self.frame_left.fg_color)
@@ -79,6 +78,8 @@ class App(customtkinter.CTk):
     
     # Switch the right frame's content to the specified frame
     def switch_frame(self, frame_class):
+        if hasattr(self.frame_right, "save_data"):
+            self.frame_right.save_data()
         new_frame = frame_class(self)
         if self.frame_right is not None:
             self.frame_right.destroy()
@@ -98,8 +99,8 @@ class App(customtkinter.CTk):
     # Switch frame to Client Manager
     def client_manager(self):
         self.switch_frame(client_manager.ClientManager)
-        self.message_center_frame.configure(fg_color=self.frame_left.fg_color)
-        self.client_manager_frame.configure(fg_color=self.frame_right.bg_color)   
+        self.message_center_frame.configure(fg_color = self.frame_left.fg_color)
+        self.client_manager_frame.configure(fg_color = self.frame_right.bg_color)   
 
 # Run App mainloop()
 if __name__ == "__main__":

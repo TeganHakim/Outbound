@@ -4,6 +4,8 @@ import tkinter.messagebox
 import customtkinter
 import datetime, re, os, math
 import vonage_task
+import toml
+import tomli
 from util import getSubDir
 
 # ==================== #
@@ -12,6 +14,12 @@ from util import getSubDir
 class MessageCenter(customtkinter.CTkFrame):
     def __init__(self, master):
         customtkinter.CTkFrame.__init__(self, master)
+        self.master = master
+        self.master.protocol("WM_DELETE_WINDOW", self.on_closing)
+
+        # Loads all data from toml file
+        with open("config.toml", "rb") as toml:
+            self.config = tomli.load(toml)
 
         # Configure grid layout for frame
         self.grid_columnconfigure(0, weight = 1)
@@ -42,7 +50,8 @@ class MessageCenter(customtkinter.CTkFrame):
         # Message frame text box
         self.message = customtkinter.CTkTextbox(master = self.message_frame, corner_radius = 10, fg_color = ("white", "gray38"), text_font = ("Roboto", -14))
         self.message.grid(row = 1, column = 0, sticky="nesw", padx = 15, pady = (10, 15))
-        
+        self.message.insert("0.0", self.config["message_center"]["message"].lstrip("\n"))
+
         # Configure send filter frame
         self.send_filter_frame = customtkinter.CTkFrame(master=self.frame_right, corner_radius=10)
         self.send_filter_frame.grid(row=4, column=0, columnspan=2, rowspan=5, sticky="nsew", padx=15, pady=(0, 15))
@@ -72,7 +81,7 @@ class MessageCenter(customtkinter.CTkFrame):
         self.possible_dates = tkinter.Listbox(self.select_dates_frame, activestyle = "none", bg = "gray38", fg = "white", font = ("Roboto", -16), highlightthickness = 0, highlightbackground = "gray38", bd = 0)
         self.possible_dates.grid(row = 0, column = 0, rowspan = 4, sticky = "nsew", padx = (15, 0), pady = (10, 15))
         # Initialize list of possible dates as empty array
-        self.possible_dates_list = []
+        self.possible_dates_list = self.config["message_center"]["possible_dates"]
         # Bind focus mouse events to listbox
         self.possible_dates.bind("<FocusIn>", self.possible_dates_focused)
         self.possible_dates.bind("<FocusOut>", self.possible_dates_unfocused)
@@ -89,12 +98,16 @@ class MessageCenter(customtkinter.CTkFrame):
         self.final_dates = tkinter.Listbox(self.select_dates_frame, activestyle = "none", bg = "gray38", fg = "white", font = ("Roboto", -16), highlightthickness = 0, highlightbackground = "gray38", bd = 0)
         self.final_dates.grid(row = 0, column = 2, rowspan = 4, sticky = "nsew", padx = (0, 15), pady = (10, 15))
         # Initialize list of final dates as empty array
-        self.final_dates_list = []
+        self.final_dates_list = self.config["message_center"]["final_dates"]
         # Bind focus mouse events to listbox
         self.final_dates.bind("<FocusIn>", self.final_dates_focused)
         self.final_dates.bind("<FocusOut>", self.final_dates_unfocused)
         # Initialize listbox's focus state
         self.final_dates_focus = False
+        
+        # Display new values from toml
+        self.update_possible_list()
+        self.update_final_list()
 
         # Display selected groups title
         self.selected_groups_label = customtkinter.CTkLabel(master = self.frame_right, text = "Filter Selection:", text_font = ("Roboto Medium", -16, "bold"))
@@ -104,12 +117,18 @@ class MessageCenter(customtkinter.CTkFrame):
         self.selected_groups_frame = customtkinter.CTkFrame(master = self.frame_right)
         self.selected_groups_frame.grid(row = 1, column = 2, pady = 10, padx = (0, 20), sticky = "nsew")
         
-        # Setup Master / Client filter
+        # Setup Master filter
         self.filter_selection_master = customtkinter.CTkCheckBox(master = self.selected_groups_frame, text = "Master Files", command = self.filter_selection, onvalue = "on", offvalue = "off")
-        self.filter_selection_master.grid(row=0, column=0, pady=(20, 5), padx=20, sticky="nsw")
+        self.filter_selection_master.grid(row = 0, column = 0, pady = (20, 5), padx = 20, sticky = "nsw")
+        if self.config["message_center"]["master_select"] == "on":
+            self.filter_selection_master.select()
+
+        # Setup Client filter
         self.filter_selection_client = customtkinter.CTkCheckBox(master = self.selected_groups_frame, text = "Client Files", command = self.filter_selection, onvalue = "on", offvalue = "off")
         self.filter_selection_client.grid(row = 1, column = 0, pady = (5, 20), padx = 20, sticky = "nsw")
-        
+        if self.config["message_center"]["client_select"] == "on":
+            self.filter_selection_client.select()       
+
         # Display date selection title
         self.date_select_label = customtkinter.CTkLabel(master = self.frame_right, text="Scheduled Send:", text_font=("Roboto Medium", -16, "bold"))
         self.date_select_label.grid(row = 2, column = 2, columnspan = 1, pady = (10, 0), padx = (0, 20))
@@ -117,6 +136,7 @@ class MessageCenter(customtkinter.CTkFrame):
         # Configure date selection frame
         self.date_select_frame = customtkinter.CTkFrame(master = self.frame_right)
         self.date_select_frame.grid(row = 3, column = 2, pady = 10, padx = (0, 20), sticky = "nsew")
+
         # Configure date selection frame's grid layout
         self.date_select_frame.rowconfigure((1, 2, 3, 4), weight = 1)
         self.date_select_frame.columnconfigure((0, 1), weight = 1)
@@ -125,19 +145,28 @@ class MessageCenter(customtkinter.CTkFrame):
         current_month = datetime.datetime.now().strftime("%B")
         self.month = customtkinter.CTkComboBox(master = self.date_select_frame, command = self.month_changed, values = ("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"))                            
         self.month.grid(row = 0, column = 0, pady = 10, padx = 5, sticky="nsew")  
-        self.month.set(current_month)   
+        if self.config["message_center"]["month"] != "":
+            self.month.set(self.config["message_center"]["month"])
+        else:
+            self.month.set(current_month)   
 
         # Date selection day button 
         current_day = datetime.datetime.now().day
         self.day = customtkinter.CTkComboBox(master = self.date_select_frame, command = self.day_changed, values = ("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31"))
         self.day.grid(row = 1, column = 0, pady = 10, padx = 5, sticky = "nsew")
-        self.day.set(current_day)
+        if self.config["message_center"]["day"] != 0:
+            self.day.set(self.config["message_center"]["day"])
+        else:
+            self.day.set(current_day)  
         
         # Date Selection year button
         current_year = datetime.datetime.now().year
         self.year = customtkinter.CTkComboBox(master = self.date_select_frame, command = self.year_changed, values = (str(current_year), str(current_year + 1), str(current_year + 2)))
         self.year.grid(row = 2, column = 0, pady = 10, padx = 5, sticky="nsew")
-        self.year.set(current_year)
+        if self.config["message_center"]["year"] != "":
+            self.year.set(self.config["message_center"]["year"])
+        else:
+            self.year.set(current_year) 
        
        # Configure error label when entry not valid
         self.error_label = customtkinter.CTkLabel(master = self.date_select_frame, text = "", text_color = "#D5806B", text_font = ("Roboto", -12, "italic"))
@@ -150,14 +179,20 @@ class MessageCenter(customtkinter.CTkFrame):
         # Date selection time entry
         self.time = customtkinter.CTkEntry(master = self.date_select_frame, width = 100, fg_color = self.date_select_frame.bg_color, validate = "focusout", validatecommand = self.vcmd, invalidcommand = self.ivcmd, placeholder_text = "hh:mm")
         self.time.grid(row = 3, column = 0, pady = 10, padx = 5, sticky = "nsw")
+        if self.config["message_center"]["time"] != "":
+            self.time.insert(0, self.config["message_center"]["time"])
+
         # Date selection Am/PM selection
         self.am_pm = customtkinter.CTkComboBox(master = self.date_select_frame, width = 75, command = self.am_pm_changed, values = ["AM", "PM"])
         self.am_pm.grid(row = 3, column = 0, pady = 10, padx = 5, sticky = "nse")
-        
+        self.am_pm.set(self.config["message_center"]["am_pm"])
+
         # Date selection send instantly button
-        self.instant = customtkinter.IntVar(value = 0)
-        self.instant_switch = customtkinter.CTkSwitch(master = self.date_select_frame, text = "Send Instantly", command =self.instant_changed, variable = self.instant, onvalue = 1, offvalue = 0, text_font = ("Roboto Medium", -16))
+        self.instant = customtkinter.IntVar(value = 1)
+        self.instant_switch = customtkinter.CTkSwitch(master = self.date_select_frame, text = "Send Instantly", command = self.instant_changed, variable = self.instant, onvalue = 1, offvalue = 0, text_font = ("Roboto Medium", -16))
         self.instant_switch.grid(row = 5, column = 0, pady = (5, 10), padx =20, sticky = "ew")
+        if self.config["message_center"]["instant"] == 0:
+            self.instant_switch.deselect()
 
         # Display statistics title
         self.statistics_label = customtkinter.CTkLabel(master = self.frame_right, text = "Statistics", text_font = ("Roboto Medium", -16))
@@ -408,3 +443,23 @@ class MessageCenter(customtkinter.CTkFrame):
         message = "Message Length:\n- {} characters\n\nTotal Recieving Clients:\n- {} clients ({} files)\n\nApproximate Send Time:\n- {} seconds\n\nApproximate Price:\n- ${}".format(message_length, total_clients, total_files, approx_time, approx_price)
         self.statistics.insert("0.0", message)
         self.statistics.configure(state = "disabled")
+    
+    def save_data(self):
+        self.config["message_center"]["message"] = self.message.get("0.0", "end")
+        self.config["message_center"]["possible_dates"] = self.possible_dates_list
+        self.config["message_center"]["final_dates"] = self.final_dates_list
+        self.config["message_center"]["master_select"] = self.filter_selection_master.get()
+        self.config["message_center"]["client_select"] = self.filter_selection_client.get()
+        self.config["message_center"]["month"] = self.month.get()
+        self.config["message_center"]["day"] = self.day.get()
+        self.config["message_center"]["year"] = self.year.get()
+        self.config["message_center"]["time"] = self.time.get()
+        self.config["message_center"]["am_pm"] = self.am_pm.get()
+        self.config["message_center"]["instant"] = self.instant_switch.get()
+        data = toml.dumps(self.config)
+        with open("config.toml", "w") as f:
+            f.write(data)
+
+    def on_closing(self, event = 0):
+        self.save_data()
+        self.master.destroy()

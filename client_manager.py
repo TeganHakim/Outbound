@@ -4,6 +4,8 @@ import tkinter.messagebox
 from tkinter import filedialog
 import customtkinter
 import base64, os
+import toml
+import tomli
 from util import getSubDir
 
 # ==================== #
@@ -12,6 +14,12 @@ from util import getSubDir
 class ClientManager(customtkinter.CTkFrame):
     def __init__(self, master):
         customtkinter.CTkFrame.__init__(self, master)
+        self.master = master
+        self.master.protocol("WM_DELETE_WINDOW", self.on_closing)
+
+        # Loads all data from toml file
+        with open("config.toml", "rb") as toml:
+            self.config = tomli.load(toml)
 
         # Configure grid layout for frame
         self.grid_columnconfigure(0, weight = 1)
@@ -38,11 +46,12 @@ class ClientManager(customtkinter.CTkFrame):
         # Display client list frame title
         self.client_list_label = customtkinter.CTkLabel(master = self.client_list_frame, text = "Client List:", text_font = ("Roboto Medium", -18, "bold"))
         self.client_list_label.grid(column = 0, row = 0, sticky = "new", padx = (15, 10), pady = (10, 0))
+        if self.config["client_manager"]["filename"] != "":
+            self.client_list_label.configure(text = "Client List: " + self.config["client_manager"]["filename"])
         
         # Configure client list textbox
         self.client_list = customtkinter.CTkTextbox(master = self.client_list_frame, corner_radius = 10, height = 200, fg_color = ("white", "gray38"), text_color = ("gray38", "white"), text_font = ("Roboto", -14))
         self.client_list.grid(row = 1, column = 0, sticky = "nsew", padx = 15, pady = (10, 15))
-
         # Initialize as read-only 
         self.client_list.configure(state = "disabled")
 
@@ -124,6 +133,10 @@ class ClientManager(customtkinter.CTkFrame):
         self.button_5 = customtkinter.CTkButton(master=self.frame_right, text="CTkButton", border_width=2, fg_color=None)
         self.button_5.grid(row = 8, column = 2, columnspan=1, pady=15, padx=(0, 20), sticky="we")
          
+        if self.config["client_manager"]["filename"] != "":
+            self.file_viewer(self.config["client_manager"]["filename"])
+            self.view_file.select_set(self.view_file_list.index(self.config["client_manager"]["filename"]))
+
     # Upload Excel or CSV file to Client Manager, save locally
     def upload_file(self):
         file_types = [('CSV Files', '*.csv'), ('Excel Files', '*.xlsx'), ('All Files', '*.*')]
@@ -187,6 +200,9 @@ class ClientManager(customtkinter.CTkFrame):
     # Triggered by <ButtonRelease-1> event on view file listbox
     def view_file_clicked(self, event):
         client_surname = self.view_file.get(self.view_file.curselection())
+        self.file_viewer(client_surname)
+    
+    def file_viewer(self, client_surname):
         original_filepath = os.getcwd() + getSubDir(client_surname) + client_surname
         file_content = open(original_filepath, "r").read()        
         self.client_list_label.configure(text = "Client List: " + client_surname)
@@ -195,3 +211,13 @@ class ClientManager(customtkinter.CTkFrame):
         self.client_list.insert('0.0', file_content)    
         self.edit_button.configure(text = "Edit")
         self.client_list.configure(state = "disabled")   
+
+    def save_data(self):
+        self.config["client_manager"]["filename"] = self.client_list_label.cget("text").split(": ")[-1]
+        data = toml.dumps(self.config)
+        with open("config.toml", "w") as f:
+            f.write(data)
+
+    def on_closing(self, event = 0):
+        self.save_data()
+        self.master.destroy()
