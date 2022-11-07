@@ -5,10 +5,10 @@ final_dates = []
 master_select = "off"
 client_select = "off"
 month = "November"
-day = "6"
+day = "7"
 year = "2022"
-time = "11:43"
-am_pm = "PM"
+time = "12:08"
+am_pm = "AM"
 instant = 0
 
 [client_manager]
