@@ -4,6 +4,8 @@
 import customtkinter
 import message_center
 import client_manager
+import requests, os
+import json
 
 # Set the system appearance to Dark mode by default
 customtkinter.set_appearance_mode("Dark")
@@ -73,6 +75,17 @@ class App(customtkinter.CTk):
         self.client_manager_button = customtkinter.CTkButton(master = self.client_manager_frame, text = "Client Manager", command = self.client_manager)
         self.client_manager_button.grid(row = 3, column = 0, pady = 10, padx = 20)
 
+        # Configure server status label
+        self.server_status_label = customtkinter.CTkLabel(master = self.frame_left, text = "Server Status:", text_font = ("Roboto Medium", -14, "bold"))
+        self.server_status_label.grid(row = 10, column = 0, sticky = "sew")
+
+        # Configure server status colored label
+        self.server_status_colored_label = customtkinter.CTkLabel(master = self.frame_left, text = "", text_font = ("Roboto Medium", -15, "italic"))
+        self.server_status_colored_label.grid(row = 11, column = 0, sticky = "sew")
+
+        # Update status
+        self.update_status()
+
     # ==================== #
     #     App Functions    #
     # ==================== #
@@ -103,6 +116,29 @@ class App(customtkinter.CTk):
         self.message_center_frame.configure(fg_color = self.frame_left.fg_color)
         self.client_manager_frame.configure(fg_color = self.frame_right.bg_color)   
 
+    # Update server status
+    def update_status(self):
+        # Get server status
+        response = requests.post(f"https://api.uptimerobot.com/v2/getMonitors?api_key={os.getenv('UPTIME_ROBOT_API_KEY')}")
+        response_data = json.loads(response.text)
+        index = 0
+        for i in range(len(response_data["monitors"])):
+            if response_data["monitors"][i]["friendly_name"] == "Outbound Server":
+                index = i                
+        server_status = response_data["monitors"][index]["status"]
+        server_text = ""
+        if server_status == 0:
+            server_text = "Paused"
+        elif server_status == 2:
+            server_text = "Online"
+        else:
+            server_text = "Offline"
+        color = "#4a9c44"
+        if server_status == 0:
+            color = "#8a5c56"
+        elif server_status == 1:
+            color = "#ac4335"
+        self.server_status_colored_label.configure(text = f"{server_text}", fg_color = color)
 # Run App mainloop()
 if __name__ == "__main__":
     app = App()

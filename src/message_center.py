@@ -6,6 +6,8 @@ import datetime, re, os, math
 import vonage_task as vonage_task
 import toml
 import tomli
+import requests
+import json
 from util import getSubDir
 
 # ==================== #
@@ -350,7 +352,27 @@ class MessageCenter(customtkinter.CTkFrame):
                 response = vonage_task.send_sms(receiving_clients, self.message.get("0.0", "end"))
         # Send SMS at given date 
         else:
-            pass
+            URL = "https://Outbound-Server.teganhakim.repl.co"
+            API_HEADER = "/api/v1/sms"
+            total_clients = []
+            for file in self.final_dates_list:
+                filename = self.PATH + getSubDir(file) + file
+                total_clients += open(filename, "r").read().splitlines()
+            self.scheduled_message = {
+            "status": "pending",
+            "content": {
+                "client_list": total_clients,
+                "message": self.message.get("0.0", "end")
+            },
+            "date": {
+                "month": self.month.get(),
+                "day": self.day.get(),
+                "year": self.year.get(),
+                "time": self.time.get(),
+                "am_pm": self.am_pm.get()
+                }
+            }
+            response = requests.post(URL + API_HEADER, data = json.dumps(self.scheduled_message))
         
     # Triggered upon date selection month changed, update date
     def month_changed(self, event):
