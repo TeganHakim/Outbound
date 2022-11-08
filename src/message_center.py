@@ -1,13 +1,12 @@
 # Import libraries for tkinter GUI and system utilities
 import tkinter
 import tkinter.messagebox
+from tkinter.messagebox import askyesno, showerror
 import customtkinter
-import datetime, re, os, math
-import vonage_task as vonage_task
-import toml
-import tomli
-import requests
-import json
+import datetime
+# import vonage_task as vonage_task
+import toml, tomli
+import requests, json, os, re, math
 from util import getSubDir
 
 # ==================== #
@@ -52,7 +51,7 @@ class MessageCenter(customtkinter.CTkFrame):
         # Message frame text box
         self.message = customtkinter.CTkTextbox(master = self.message_frame, corner_radius = 10, fg_color = ("white", "gray38"), text_font = ("Roboto", -14))
         self.message.grid(row = 1, column = 0, sticky="nesw", padx = 15, pady = (10, 15))
-        self.message.insert("0.0", self.config["message_center"]["message"].lstrip("\n"))
+        self.message.insert("0.0", self.config["message_center"]["message"].lstrip("\n").strip())
 
         # Configure send filter frame
         self.send_filter_frame = customtkinter.CTkFrame(master=self.frame_right, corner_radius=10)
@@ -339,30 +338,46 @@ class MessageCenter(customtkinter.CTkFrame):
         for date in self.final_dates_list:
             self.final_dates.insert('end', date)
 
-    # Send message using Vonage API in vonage_task.py
+    # Send message using Vonage API in server
     def send_message(self):
         self.master.focus()
+        # Initialize REST API client
+        URL = "https://Outbound-Server.teganhakim.repl.co"
+        API_HEADER = "/api/v1/sms"
+        # Get clients into one file of numbers
+        total_clients = []
+        for file in self.final_dates_list:
+            filename = self.PATH + getSubDir(file) + file
+            total_clients += open(filename, "r").read().splitlines()
+        # Get message
+        message = self.message.get("0.0", "end").strip()
+
+        if (len(total_clients) == 0 or len(message) == 0):
+            showerror(title='Error', message='Please select clients and enter a message.')
+            return
+
+        answer = askyesno(title='Outbound SMS Confirmation', message='Proceed and send message?')
+        if answer == False:
+            return
+
         # Send SMS instantly
         if (self.instant.get() == 1):
-            if len(self.final_dates_list) > 0 and len(self.message.get("0.0", "end")) > 0:
-                receiving_clients = []
-                for file in self.final_dates_list:
-                    filename = self.PATH + getSubDir(file) + file
-                    receiving_clients += open(filename, "r").read().splitlines()
-                response = vonage_task.send_sms(receiving_clients, self.message.get("0.0", "end"))
+            self.instant_message = {
+                "status": "instant",
+                "content": {
+                    "client_list": total_clients,
+                    "message": message
+                }
+            }
+            response = requests.post(URL + API_HEADER, data = json.dumps(self.instant_message))
+
         # Send SMS at given date 
         else:
-            URL = "https://Outbound-Server.teganhakim.repl.co"
-            API_HEADER = "/api/v1/sms"
-            total_clients = []
-            for file in self.final_dates_list:
-                filename = self.PATH + getSubDir(file) + file
-                total_clients += open(filename, "r").read().splitlines()
             self.scheduled_message = {
             "status": "pending",
             "content": {
                 "client_list": total_clients,
-                "message": self.message.get("0.0", "end")
+                "message": message
             },
             "date": {
                 "month": self.month.get(),

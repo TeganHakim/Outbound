@@ -2,10 +2,8 @@
 
 # Import libraries for tkinter GUI and system utilities
 import customtkinter
-import message_center
-import client_manager
-import requests, os
-import json
+import message_center, client_manager
+import requests, json, os
 
 # Set the system appearance to Dark mode by default
 customtkinter.set_appearance_mode("Dark")
@@ -121,24 +119,27 @@ class App(customtkinter.CTk):
         # Get server status
         response = requests.post(f"https://api.uptimerobot.com/v2/getMonitors?api_key={os.getenv('UPTIME_ROBOT_API_KEY')}")
         response_data = json.loads(response.text)
-        index = 0
-        for i in range(len(response_data["monitors"])):
-            if response_data["monitors"][i]["friendly_name"] == "Outbound Server":
-                index = i                
-        server_status = response_data["monitors"][index]["status"]
-        server_text = ""
-        if server_status == 0:
-            server_text = "Paused"
-        elif server_status == 2:
-            server_text = "Online"
+        if (hasattr(response_data, "monitors")):
+            index = 0
+            for i in range(len(response_data["monitors"])):
+                if response_data["monitors"][i]["friendly_name"] == "Outbound Server":
+                    index = i                
+            server_status = response_data["monitors"][index]["status"]
+            server_text = ""
+            if server_status == 0:
+                server_text = "Paused "
+            elif server_status == 2:
+                server_text = "Online "
+            else:
+                server_text = "Offline "
+            color = "#4a9c44"
+            if server_status == 0:
+                color = "#8a5c56"
+            elif server_status == 1:
+                color = "#ac4335"
+            self.server_status_colored_label.configure(text = f"{server_text}", fg_color = color)
         else:
-            server_text = "Offline"
-        color = "#4a9c44"
-        if server_status == 0:
-            color = "#8a5c56"
-        elif server_status == 1:
-            color = "#ac4335"
-        self.server_status_colored_label.configure(text = f"{server_text}", fg_color = color)
+            self.server_status_colored_label.configure(text = "Cannot Fetch ", fg_color = "#8a5c56")
 # Run App mainloop()
 if __name__ == "__main__":
     app = App()

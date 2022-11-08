@@ -4,8 +4,7 @@ import tkinter.messagebox
 from tkinter import filedialog
 import customtkinter
 import base64, os
-import toml
-import tomli
+import toml, tomli
 from util import getSubDir
 
 # ==================== #
