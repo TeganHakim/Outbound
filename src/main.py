@@ -4,10 +4,13 @@
 import customtkinter
 import message_center, client_manager
 import requests, json, os
+from dotenv import load_dotenv
 
 # Set the system appearance to Dark mode by default
 customtkinter.set_appearance_mode("Dark")
 customtkinter.set_default_color_theme("blue")
+
+load_dotenv()
 
 # ==================== #
 #     Tkinter App      #
@@ -117,9 +120,15 @@ class App(customtkinter.CTk):
     # Update server status
     def update_status(self):
         # Get server status
-        response = requests.post(f"https://api.uptimerobot.com/v2/getMonitors?api_key={os.getenv('UPTIME_ROBOT_API_KEY')}")
-        response_data = json.loads(response.text)
-        if (hasattr(response_data, "monitors")):
+        API_KEY = str(os.getenv("UPTIME_ROBOT_API_KEY"))
+        URL = f"https://api.uptimerobot.com/v2/getMonitors?api_key={API_KEY}&format=json&logs=1"
+        headers = {
+            'content-type': "application/x-www-form-urlencoded",
+            'cache-control': "no-cache"
+        }
+        status_response = requests.post(URL, headers=headers)
+        response_data = json.loads(status_response.text)
+        if (response_data["stat"] == "ok"):
             index = 0
             for i in range(len(response_data["monitors"])):
                 if response_data["monitors"][i]["friendly_name"] == "Outbound Server":
@@ -135,7 +144,7 @@ class App(customtkinter.CTk):
             color = "#4a9c44"
             if server_status == 0:
                 color = "#8a5c56"
-            elif server_status == 1:
+            elif server_status == 1 or server_status > 2:
                 color = "#ac4335"
             self.server_status_colored_label.configure(text = f"{server_text}", fg_color = color)
         else:

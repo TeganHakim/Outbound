@@ -352,7 +352,12 @@ class MessageCenter(customtkinter.CTkFrame):
         # Get message
         message = self.message.get("0.0", "end").strip()
 
-        if (len(total_clients) == 0 or len(message) == 0):
+        invalid_time = self.validate(self.time.get())
+        if invalid_time == False:
+            showerror(title='Error', message='Please enter a valid time.')
+            return
+
+        if len(total_clients) == 0 or len(message) == 0:
             showerror(title='Error', message='Please select clients and enter a message.')
             return
 
@@ -361,7 +366,7 @@ class MessageCenter(customtkinter.CTkFrame):
             return
 
         # Send SMS instantly
-        if (self.instant.get() == 1):
+        if self.instant.get() == 1:
             self.instant_message = {
                 "status": "instant",
                 "content": {
