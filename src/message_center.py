@@ -52,7 +52,7 @@ class MessageCenter(customtkinter.CTkFrame):
         self.message = customtkinter.CTkTextbox(master = self.message_frame, corner_radius = 10, fg_color = ("white", "gray38"), text_font = ("Roboto", -14))
         self.message.grid(row = 1, column = 0, sticky="nesw", padx = 15, pady = (10, 15))
         self.message.insert("0.0", self.config["message_center"]["message"].lstrip("\n").strip())
-
+        self.credits_remaining = self.update_credits_remaining()
         # Configure send filter frame
         self.send_filter_frame = customtkinter.CTkFrame(master=self.frame_right, corner_radius=10)
         self.send_filter_frame.grid(row=4, column=0, columnspan=2, rowspan=5, sticky="nsew", padx=15, pady=(0, 15))
@@ -341,6 +341,9 @@ class MessageCenter(customtkinter.CTkFrame):
     # Send message using Vonage API in server
     def send_message(self):
         self.master.focus()
+        if (self.credits_remaining <= 0):
+            showerror(title='Error', message='No credits remaining!')
+            return
         # Initialize REST API client
         URL = "https://Outbound-Server.teganhakim.repl.co"
         API_HEADER = "/api/v1/sms"
@@ -379,7 +382,7 @@ class MessageCenter(customtkinter.CTkFrame):
                     "message": message
                 }
             }
-            #response = requests.post(URL + API_HEADER, data = json.dumps(self.instant_message))
+            response = requests.post(URL + API_HEADER, data = json.dumps(self.instant_message))
 
         # Send SMS at given date 
         else:
@@ -397,8 +400,10 @@ class MessageCenter(customtkinter.CTkFrame):
                 "am_pm": self.am_pm.get()
                 }
             }
-            #response = requests.post(URL + API_HEADER, data = json.dumps(self.scheduled_message))
-        
+            response = requests.post(URL + API_HEADER, data = json.dumps(self.scheduled_message))
+        # Update credits
+        self.credits_remaining = self.update_credits_remaining()
+
     # Triggered upon date selection month changed, update date
     def month_changed(self, event):
         time = datetime.datetime.strptime((datetime.datetime.now().strftime("%H:%M")), "%H:%M")
@@ -465,7 +470,6 @@ class MessageCenter(customtkinter.CTkFrame):
             current_time = datetime.datetime.strptime((datetime.datetime.now().strftime("%H:%M")), "%H:%M")
             if str(current_time.strftime("%p")) == am_pm:
                 current_time = str(current_time.strftime("%I:%M"))
-                print(current_time)
                 if int(time.split(":")[0]) < int(current_time.split(":")[0]):
                     return False
                 elif int(time.split(":")[1]) < int(current_time.split(":")[1]):
@@ -530,6 +534,7 @@ class MessageCenter(customtkinter.CTkFrame):
         self.statistics.insert("0.0", message)
         self.statistics.configure(state = "disabled")
     
+    # Save data to toml file
     def save_data(self):
         self.config["message_center"]["message"] = self.message.get("0.0", "end")
         self.config["message_center"]["possible_dates"] = self.possible_dates_list
@@ -546,6 +551,17 @@ class MessageCenter(customtkinter.CTkFrame):
         with open(self.PATH + "\config.toml", "w") as f:
             f.write(data)
 
+    # Close app
     def on_closing(self, event = 0):
         self.save_data()
         self.master.destroy()
+
+    # Update credits remaining
+    def update_credits_remaining(self):
+        URL = "https://Outbound-Server.teganhakim.repl.co"
+        API_HEADER = "/api/v1/credits"
+
+        credits_response = requests.get(URL + API_HEADER)
+        response_data = json.loads(credits_response.text)
+        credits = response_data["credits_remaining"]
+        return credits

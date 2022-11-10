@@ -1,14 +1,14 @@
 [message_center]
-message = "Here is my message\n"
+message = "Here is my test message of properly sending text message\n"
 possible_dates = [ "master_list_1.csv", "master_list_2.csv", "chris 102422.csv",]
 final_dates = [ "test-message.csv",]
 master_select = "on"
 client_select = "on"
 month = "November"
-day = "9"
+day = "10"
 year = "2022"
-time = "10:30"
-am_pm = "PM"
+time = "12:02"
+am_pm = "AM"
 instant = 1
 
 [client_manager]

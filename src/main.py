@@ -76,6 +76,17 @@ class App(customtkinter.CTk):
         self.client_manager_button = customtkinter.CTkButton(master = self.client_manager_frame, text = "Client Manager", command = self.client_manager)
         self.client_manager_button.grid(row = 3, column = 0, pady = 10, padx = 20)
 
+        # Configure credits remaining label
+        self.credits_remaining_label = customtkinter.CTkLabel(master = self.frame_left, text = "Credits Remaining:", text_font = ("Roboto Medium", -14, "bold"))
+        self.credits_remaining_label.grid(row = 8, column = 0, sticky = "sew")
+
+        # Configure credits remaining colored label
+        self.credits_remaining_colored_label = customtkinter.CTkLabel(master = self.frame_left, text = "", text_font = ("Roboto Medium", -15, "italic"))
+        self.credits_remaining_colored_label.grid(row = 9, column = 0, sticky = "sew")
+
+        # Update credits remaining
+        self.update_credits_remaining()
+
         # Configure server status label
         self.server_status_label = customtkinter.CTkLabel(master = self.frame_left, text = "Server Status:", text_font = ("Roboto Medium", -14, "bold"))
         self.server_status_label.grid(row = 10, column = 0, sticky = "sew")
@@ -151,6 +162,23 @@ class App(customtkinter.CTk):
             self.server_status_colored_label.configure(text = f"{server_text}", fg_color = color)
         else:
             self.server_status_colored_label.configure(text = "Cannot Fetch ", fg_color = "#8a5c56")
+        
+    # Update credits remaining
+    def update_credits_remaining(self):
+        URL = "https://Outbound-Server.teganhakim.repl.co"
+        API_HEADER = "/api/v1/credits"
+
+        credits_response = requests.get(URL + API_HEADER)
+        response_data = json.loads(credits_response.text)
+        credits = response_data["credits_remaining"]
+        color = "#4a9c44"
+        if int(credits) <= 100000:
+            color = "#9C9E4C"
+        if int(credits) <= 500:
+            color = "#ac4335"
+        credits_trailing = "{:,}".format(credits)
+        self.credits_remaining_colored_label.configure(text = f"{credits_trailing}", fg_color = color)
+        
 # Run App mainloop()
 if __name__ == "__main__":
     app = App()
