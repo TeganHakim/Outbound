@@ -352,6 +352,11 @@ class MessageCenter(customtkinter.CTkFrame):
         # Get message
         message = self.message.get("0.0", "end").strip()
 
+        invalid_day = self.validate_day()
+        if invalid_day == False:
+            showerror(title='Error', message='Please enter a valid date.')
+            return
+
         invalid_time = self.validate(self.time.get())
         if invalid_time == False:
             showerror(title='Error', message='Please enter a valid time.')
@@ -374,7 +379,7 @@ class MessageCenter(customtkinter.CTkFrame):
                     "message": message
                 }
             }
-            response = requests.post(URL + API_HEADER, data = json.dumps(self.instant_message))
+            #response = requests.post(URL + API_HEADER, data = json.dumps(self.instant_message))
 
         # Send SMS at given date 
         else:
@@ -392,7 +397,7 @@ class MessageCenter(customtkinter.CTkFrame):
                 "am_pm": self.am_pm.get()
                 }
             }
-            response = requests.post(URL + API_HEADER, data = json.dumps(self.scheduled_message))
+            #response = requests.post(URL + API_HEADER, data = json.dumps(self.scheduled_message))
         
     # Triggered upon date selection month changed, update date
     def month_changed(self, event):
@@ -401,7 +406,7 @@ class MessageCenter(customtkinter.CTkFrame):
             self.instant_switch.deselect()
             self.instant.set(0)
         else:
-            if int(self.day.get()) == int(datetime.datetime.now().day) and int(self.year.get()) == int(datetime.datetime.now().year and str(self.time.get()) == str(time.strftime("%I:%M")) and str(self.am_pm.get()) == str(time.strftime("%p"))):
+            if int(self.day.get()) == int(datetime.datetime.now().day) and str(self.year.get()) == str(datetime.datetime.now().year) and str(self.time.get()) == str(time.strftime("%I:%M")) and str(self.am_pm.get()) == str(time.strftime("%p")):
                 self.instant_switch.select()
                 self.instant.set(1)            
 
@@ -412,29 +417,29 @@ class MessageCenter(customtkinter.CTkFrame):
             self.instant_switch.deselect()
             self.instant.set(0)
         else:
-            if str(self.month.get()) == str(datetime.datetime.now().strftime("%B")) and int(self.year.get()) == int(datetime.datetime.now().year and str(self.time.get()) == str(time.strftime("%I:%M")) and str(self.am_pm.get()) == str(time.strftime("%p"))):
+            if str(self.month.get()) == str(datetime.datetime.now().strftime("%B")) and str(self.year.get()) == str(datetime.datetime.now().year) and str(self.time.get()) == str(time.strftime("%I:%M")) and str(self.am_pm.get()) == str(time.strftime("%p")):
                 self.instant_switch.select()
                 self.instant.set(1)
     
     # Triggered upon date selection year changed, update date
     def year_changed(self, event):
         time = datetime.datetime.strptime((datetime.datetime.now().strftime("%H:%M")), "%H:%M")
-        if int(event) != int(datetime.datetime.now().year):
+        if str(event) != str(datetime.datetime.now().year):
             self.instant_switch.deselect()
             self.instant.set(0)
         else:
-            if str(self.month.get()) == str(datetime.datetime.now().strftime("%B")) and int(self.day.get()) == int(datetime.datetime.now().day and str(self.time.get()) == str(time.strftime("%I:%M")) and str(self.am_pm.get()) == str(time.strftime("%p"))):
+            if str(self.month.get()) == str(datetime.datetime.now().strftime("%B")) and int(self.day.get()) == int(datetime.datetime.now().day) and str(self.time.get()) == str(time.strftime("%I:%M")) and str(self.am_pm.get()) == str(time.strftime("%p")):
                 self.instant_switch.select()
                 self.instant.set(1)
 
     # Triggered upon date selection time changed, update date
-    def time_changed(self, *args):
+    def time_changed(self):
         time = datetime.datetime.strptime((datetime.datetime.now().strftime("%H:%M")), "%H:%M")
-        if str(self.time.get()) != str(time.strftime("%I%M")):
+        if str(self.time.get()) != str(time.strftime("%I:%M")):
             self.instant_switch.deselect()
             self.instant.set(0)
         else:
-            if str(self.month.get()) == str(datetime.datetime.now().strftime("%B")) and int(self.day.get()) == int(datetime.datetime.now().day) and int(self.year.get()) == int(datetime.datetime.now().year) and str(self.am_pm.get()) == str(time.strftime("%p")):
+            if str(self.month.get()) == str(datetime.datetime.now().strftime("%B")) and int(self.day.get()) == int(datetime.datetime.now().day) and str(self.year.get()) == str(datetime.datetime.now().year) and str(self.am_pm.get()) == str(time.strftime("%p")):
                 self.instant_switch.select()
                 self.instant.set(1)
 
@@ -445,9 +450,34 @@ class MessageCenter(customtkinter.CTkFrame):
             self.instant_switch.deselect()
             self.instant.set(0)
         else:
-            if str(self.month.get()) == str(datetime.datetime.now().strftime("%B")) and int(self.day.get()) == int(datetime.datetime.now().day) and int(self.year.get()) == int(datetime.datetime.now().year) and str(self.time.get()) == str(time.strftime("%I:%M")):
+            if str(self.month.get()) == str(datetime.datetime.now().strftime("%B")) and int(self.day.get()) == int(datetime.datetime.now().day) and str(self.year.get()) == str(datetime.datetime.now().year) and str(self.time.get()) == str(time.strftime("%I:%M")):
                 self.instant_switch.select()
                 self.instant.set(1)
+
+    # Validate if day is past
+    def validate_day(self):
+        month = str(self.month.get())
+        day = int(self.day.get())
+        year = str(self.year.get())
+        time = str(self.time.get())
+        am_pm = str(self.am_pm.get())
+        if month == str(datetime.datetime.now().strftime("%B")) and day == int(datetime.datetime.now().day) and year == str(datetime.datetime.now().year):
+            current_time = datetime.datetime.strptime((datetime.datetime.now().strftime("%H:%M")), "%H:%M")
+            if str(current_time.strftime("%p")) == am_pm:
+                current_time = str(current_time.strftime("%I:%M"))
+                print(current_time)
+                if int(time.split(":")[0]) < int(current_time.split(":")[0]):
+                    return False
+                elif int(time.split(":")[1]) < int(current_time.split(":")[1]):
+                    return False
+            else:
+                return False
+        if month == str(datetime.datetime.now().strftime("%B")) and day < int(datetime.datetime.now().day) and year == str(datetime.datetime.now().year):
+            return False
+        months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+        if months.index(month) < months.index(datetime.datetime.now().strftime("%B")) and year == str(datetime.datetime.now().year):
+            return False
+        return True
 
     # Show error message upon invalid data entry
     def show_message(self, error = ''):
@@ -458,7 +488,8 @@ class MessageCenter(customtkinter.CTkFrame):
             self.time.configure(fg_color = "#B66A58")
 
     # Validate time input in 12 hour format
-    def validate(self, event):   
+    def validate(self, event):  
+        self.time_changed() 
         pattern = r'^(0?[1-9]|1[0-2]):[0-5][0-9]$'
         if (re.fullmatch(pattern, event) is None):
             return False
@@ -495,7 +526,7 @@ class MessageCenter(customtkinter.CTkFrame):
         approx_time = round((num_messages * total_clients) / message_rate, 2) 
         message_price = 0.0078
         approx_price = round((num_messages * total_clients) * message_price, 2)
-        message = "Message Length:\n- {} characters\n\nTotal Recieving Clients:\n- {} clients ({} files)\n\nApproximate Send Time:\n- {} seconds\n\nApproximate Price:\n- ${}".format(message_length, total_clients, total_files, approx_time, approx_price)
+        message = "Message Length:\n- {} characters ({} messages)\n\nTotal Recieving Clients:\n- {} clients ({} files)\n\nApproximate Send Time:\n- {} seconds\n\nApproximate Price:\n- ${}".format(message_length, num_messages, total_clients, total_files, approx_time, approx_price)
         self.statistics.insert("0.0", message)
         self.statistics.configure(state = "disabled")
     

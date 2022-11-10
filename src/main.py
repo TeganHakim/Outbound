@@ -137,14 +137,16 @@ class App(customtkinter.CTk):
             server_text = ""
             if server_status == 0:
                 server_text = "Paused "
+            elif server_status == 1:
+                server_text = "Not Checked "
             elif server_status == 2:
                 server_text = "Online "
             else:
                 server_text = "Offline "
             color = "#4a9c44"
-            if server_status == 0:
+            if server_status == 0 or server_status == 1:
                 color = "#8a5c56"
-            elif server_status == 1 or server_status > 2:
+            elif server_status > 2:
                 color = "#ac4335"
             self.server_status_colored_label.configure(text = f"{server_text}", fg_color = color)
         else:
