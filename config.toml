@@ -1,15 +1,15 @@
 [message_center]
-message = "Testing my message scheduled on November 8th\n"
+message = "Here is my message\n"
 possible_dates = [ "master_list_1.csv", "master_list_2.csv", "chris 102422.csv",]
 final_dates = [ "test-message.csv",]
 master_select = "on"
 client_select = "on"
 month = "November"
-day = "8"
+day = "9"
 year = "2022"
-time = "9:59"
+time = "10:30"
 am_pm = "PM"
-instant = 0
+instant = 1
 
 [client_manager]
 filename = "test-message.csv"
