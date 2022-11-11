@@ -171,6 +171,9 @@ class App(customtkinter.CTk):
         credits_response = requests.get(URL + API_HEADER)
         response_data = json.loads(credits_response.text)
         credits = response_data["credits_remaining"]
+        self.display_credits(credits)
+    
+    def display_credits(self, credits):
         color = "#4a9c44"
         if int(credits) <= 100000:
             color = "#9C9E4C"
@@ -178,7 +181,6 @@ class App(customtkinter.CTk):
             color = "#ac4335"
         credits_trailing = "{:,}".format(credits)
         self.credits_remaining_colored_label.configure(text = f"{credits_trailing}", fg_color = color)
-        
 # Run App mainloop()
 if __name__ == "__main__":
     app = App()

@@ -1,7 +1,7 @@
 # Import libraries for tkinter GUI and system utilities
 import tkinter
 import tkinter.messagebox
-from tkinter.messagebox import askyesno, showerror
+from tkinter.messagebox import askyesno, showerror, showinfo
 import customtkinter
 import datetime
 # import vonage_task as vonage_task
@@ -351,7 +351,7 @@ class MessageCenter(customtkinter.CTkFrame):
         total_clients = []
         for file in self.final_dates_list:
             filename = self.PATH + getSubDir(file) + file
-            total_clients += open(filename, "r").read().splitlines()
+            total_clients += open(filename, "r").read().strip().splitlines()
         # Get message
         message = self.message.get("0.0", "end").strip()
 
@@ -383,6 +383,12 @@ class MessageCenter(customtkinter.CTkFrame):
                 }
             }
             response = requests.post(URL + API_HEADER, data = json.dumps(self.instant_message))
+            if response.status_code == 201:
+                showinfo(title='Success', message='Message Sent Successfully!')
+                self.credits_remaining -= len(total_clients)
+            else:
+                error_msg = json.loads(response.text)
+                showerror(title='Error', message='Error Code: 404\nMessage Failed To Send\n' + str(error_msg["error"]))
 
         # Send SMS at given date 
         else:
@@ -401,8 +407,15 @@ class MessageCenter(customtkinter.CTkFrame):
                 }
             }
             response = requests.post(URL + API_HEADER, data = json.dumps(self.scheduled_message))
+            if response.status_code == 201:
+                showinfo(title='Success', message='Message Scheduled Successfully!')
+                self.credits_remaining -= len(total_clients)
+            else:
+                error_msg = json.loads(response.text)
+                showerror(title='Error', message='Error Code: 404\nMessage Failed To Schedule\n' + str(error_msg["error"]))
+
         # Update credits
-        self.credits_remaining = self.update_credits_remaining()
+        self.master.display_credits(self.credits_remaining)
 
     # Triggered upon date selection month changed, update date
     def month_changed(self, event):
@@ -461,6 +474,9 @@ class MessageCenter(customtkinter.CTkFrame):
 
     # Validate if day is past
     def validate_day(self):
+        if self.instant.get() == 1:
+            self.instant_changed()
+            return True
         month = str(self.month.get())
         day = int(self.day.get())
         year = str(self.year.get())
@@ -524,13 +540,14 @@ class MessageCenter(customtkinter.CTkFrame):
         total_clients = 0
         for file in self.final_dates_list:
             filename = self.PATH + getSubDir(file) + file
-            total_clients += len(open(filename, "r").read().splitlines())
+            total_clients += len(open(filename, "r").read().strip().splitlines())
         num_messages = 1 + math.floor(message_length / 160)
         message_rate = 50
         approx_time = round((num_messages * total_clients) / message_rate, 2) 
         message_price = 0.0078
-        approx_price = round((num_messages * total_clients) * message_price, 2)
-        message = "Message Length:\n- {} characters ({} messages)\n\nTotal Recieving Clients:\n- {} clients ({} files)\n\nApproximate Send Time:\n- {} seconds\n\nApproximate Price:\n- ${}".format(message_length, num_messages, total_clients, total_files, approx_time, approx_price)
+        num_credits = num_messages * total_clients
+        approx_price = round((num_messages * total_clients) * message_price, 4)
+        message = "Message Length:\n- {} characters ({} messages)\n\nTotal Recieving Clients:\n- {} clients ({} files)\n\nApproximate Send Time:\n- {} seconds\n\nApproximate Price:\n- {} credits (${})".format(message_length, num_messages, total_clients, total_files, approx_time, num_credits, approx_price)
         self.statistics.insert("0.0", message)
         self.statistics.configure(state = "disabled")
     

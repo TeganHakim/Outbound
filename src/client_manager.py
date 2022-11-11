@@ -249,12 +249,13 @@ class ClientManager(customtkinter.CTkFrame):
         client_surname = self.client_list_label.cget("text").split(": ")[-1]
         if client_surname.strip() != "Client List: ".strip():
             filepath = self.PATH + getSubDir(client_surname) + client_surname
-            total_clients = len(open(filepath, "r").read().splitlines())
+            total_clients = len(open(filepath, "r").read().strip().splitlines())
         message_rate = 50
         approx_time = round((total_clients) / message_rate, 2) 
         message_price = 0.0078
-        approx_price = round((total_clients) * message_price, 2)
-        message = "Total Recieving Clients:\n- {} clients\n\nApproximate Send Time:\n- {} seconds\n\nApproximate Price:\n- ${}".format(total_clients, approx_time, approx_price)
+        num_credits = total_clients
+        approx_price = round((total_clients) * message_price, 4)
+        message = "Total Recieving Clients:\n- {} clients\n\nApproximate Send Time:\n- {} seconds\n\nApproximate Price:\n- {} credits (${})".format(total_clients, approx_time, num_credits, approx_price)
         self.statistics.insert("0.0", message)
         self.statistics.configure(state = "disabled")
 
