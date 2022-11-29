@@ -4,10 +4,14 @@ import tkinter.messagebox
 from tkinter.messagebox import askyesno, showerror, showinfo
 import customtkinter
 import datetime
-# import vonage_task as vonage_task
 import toml, tomli
 import requests, json, os, re, math
 from util import getSubDir
+import requests
+from requests.auth import HTTPBasicAuth
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # ==================== #
 # Message Center Frame #
@@ -373,12 +377,33 @@ class MessageCenter(customtkinter.CTkFrame):
         if answer == False:
             return
 
+        # DNC Check
+        scrubbed_clients = []
+        with open("dnc.txt", "r+") as f:
+            dnc_list = f.read().strip().splitlines()
+            for client in total_clients:
+                if client in dnc_list:
+                    # Don't send, in DNC list
+                    pass
+                else:
+                    dnc_response = self.check_dnc(client)
+                    if dnc_response == True:
+                        # Add to personal DNC list
+                        f.write(client + "\n")
+                        # Don't send, in DNC list
+                        return
+                    else:
+                        # Add to scrubbed list
+                        scrubbed_clients.append(client)
+                
+
         # Send SMS instantly
         if self.instant.get() == 1:
             self.instant_message = {
                 "status": "instant",
                 "content": {
-                    "client_list": total_clients,
+                    "total_client_list": total_clients,
+                    "scrubbed_client_list": scrubbed_clients,
                     "message": message
                 }
             }
@@ -395,7 +420,8 @@ class MessageCenter(customtkinter.CTkFrame):
             self.scheduled_message = {
             "status": "pending",
             "content": {
-                "client_list": total_clients,
+                "total_client_list": total_clients,
+                "scrubbed_client_list": scrubbed_clients,
                 "message": message
             },
             "date": {
@@ -416,6 +442,25 @@ class MessageCenter(customtkinter.CTkFrame):
 
         # Update credits
         self.master.display_credits(self.credits_remaining)
+
+    def check_dnc(self, phone_number):
+        # JWT_token_header = {"username": os.getenv("APEIRON_USERNAME"), "password": os.getenv("APEIRON_PASSWORD")}
+        # token_response = requests.post("https://api.apeiron.io/v2/auth/jwt/token", data = JWT_token_header)
+
+        # JWT_refresh_header = {"refresh": str(json.loads(token_response.text)["refresh"])}
+        # refresh_response = requests.post("https://api.apeiron.io/v2/auth/jwt/refresh", data = JWT_refresh_header)
+
+        # JWT_access_token = str(json.loads(refresh_response.text)["access"])
+        # AUTH = {"Authorization": "Bearer " + JWT_access_token}
+        # dnc_response = requests.get(f"https://api.apeiron.io/v2/numbers/do_not_call/{phone_number}", headers = AUTH)
+
+        # print(dnc_response.text)
+
+        # If phone number is in DNC list
+        # return True
+        # If not
+        # return False
+        return False
 
     # Triggered upon date selection month changed, update date
     def month_changed(self, event):
