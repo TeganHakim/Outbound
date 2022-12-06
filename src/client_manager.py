@@ -2,6 +2,7 @@
 import tkinter
 import tkinter.messagebox
 from tkinter import filedialog
+from tkinter.messagebox import showerror
 import customtkinter
 import base64, os
 import toml, tomli
@@ -86,7 +87,7 @@ class ClientManager(customtkinter.CTkFrame):
         self.upload_file_button.grid(row = 1, column = 2, pady = (5, 0), padx = (0, 20), sticky = "new")
 
         # Display filename text for upload button
-        self.view_file_filenaming_label = customtkinter.CTkLabel(master = self.frame_right, text = "(leadName mm/dd/yyyy)", text_font = ("Roboto Medium", -12, "italic"))
+        self.view_file_filenaming_label = customtkinter.CTkLabel(master = self.frame_right, text = "Client: (leadName mm/dd/yyyy)", text_font = ("Roboto Medium", -12, "italic"))
         self.view_file_filenaming_label.grid(row =3 , column = 2, pady = (0, 5), padx = (0, 20), sticky = "new")
         
 
@@ -160,6 +161,9 @@ class ClientManager(customtkinter.CTkFrame):
         with open(clean_file, "r") as client:
             file_content = client.read()        
             client_surname = client_file.split("/")[-1]
+            if (len(client_surname.split(" ")) != 2):
+                showerror("Error", "Invalid file name. Please rename file to 'leadName mm/dd/yyyy' and try again.")
+                return
             filepath = self.PATH + "\clients\\" + client_surname
             with open(filepath, 'w') as local:
                 local.write(file_content)
@@ -169,7 +173,36 @@ class ClientManager(customtkinter.CTkFrame):
             self.client_list.insert('0.0', file_content)  
             self.file_open = True  
             self.edit_button.configure(text="Edit")
-            self.client_list.configure(state="disabled")     
+            self.client_list.configure(state="disabled")  
+
+        # Check if master file needed  
+        master_surname = client_file.split("/")[-1].split(" ")[0]
+        PATH = os.getcwd().replace("\src", "")
+        if len(os.listdir(PATH + "\masters")) == 0:
+            with open(clean_file, "r") as client:
+                file_content = client.read() 
+                filepath = self.PATH + "\masters\\" + master_surname
+                with open(filepath, 'w') as local:
+                    local.write(file_content)
+        else:
+            for file in os.listdir(PATH + "\masters"):
+                if str(master_surname) in str(file.split(".")[0]):
+                    filepath = self.PATH + "\masters\\" + file
+                    with open(filepath, 'a+') as master:
+                        with open(clean_file, "r") as client:
+                            file_content = client.read()
+                            with open(filepath, 'r') as f:
+                                text = f.read()
+                                if not text.endswith('\n'):
+                                    master.write('\n')
+                                master.write(file_content)
+                    return
+            with open(clean_file, "r") as client:
+                file_content = client.read() 
+                filepath = self.PATH + "\masters\\" + master_surname + ".csv"
+                with open(filepath, 'w') as local:
+                    local.write(file_content)
+                    
 
     # Clear file
     def clear_file(self):
