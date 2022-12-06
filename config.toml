@@ -1,7 +1,7 @@
 [message_center]
 message = "Test of message center\n"
-possible_dates = [ "master_list_1.csv", "master_list_2.csv", "chris 102422.csv",]
-final_dates = [ "test-message.csv",]
+possible_dates = [ "master_list_1.csv", "master_list_2.csv", "tegan.csv", "chris 102422.csv", "tegan 02122022.csv", "test-message.csv",]
+final_dates = []
 master_select = "on"
 client_select = "on"
 month = "November"
@@ -12,4 +12,4 @@ am_pm = "PM"
 instant = 1
 
 [client_manager]
-filename = "test-message.csv"
+filename = "tegan.csv"
