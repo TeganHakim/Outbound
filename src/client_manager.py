@@ -96,8 +96,20 @@ class ClientManager(customtkinter.CTkFrame):
         self.view_file_label.grid(row = 4, column = 2, columnspan = 1, pady = (5, 0), padx = (0, 20))
         
         # Configure view file listbox
-        self.view_file = tkinter.Listbox(self.frame_right, activestyle = "none", bg = "gray38", fg = "white", font = ("Roboto", -16), highlightthickness = 0, highlightbackground = "gray38", bd = 0)
-        self.view_file.grid(row = 5, column = 2, pady = (5, 0), padx = (0, 20), sticky = "nsew")
+
+        self.view_file_frame = customtkinter.CTkFrame(master = self.frame_right)
+        self.view_file_frame.grid(row = 5, column = 2, pady = 10, padx = (0, 20), sticky = "nsew")
+
+        self.view_file_frame.rowconfigure(0, weight = 1)
+        self.view_file_frame.columnconfigure(0, weight = 1)
+
+        self.view_file = tkinter.Listbox(self.view_file_frame, activestyle = "none", bg = "gray38", fg = "white", font = ("Roboto", -16), highlightthickness = 0, highlightbackground = "gray38", bd = 0)
+        self.view_file.grid(row = 0, column = 0, columnspan = 1, rowspan = 2, pady = (0, 0), padx = (0, 0), sticky = "nsew")
+
+        self.view_file_scrollbar = customtkinter.CTkScrollbar(master = self.view_file_frame, scrollbar_color = self.frame_right.bg_color, fg_color = ("white", "grey38"), corner_radius = 10, command = self.view_file.yview)
+        self.view_file_scrollbar.grid(row = 0, column = 0, sticky = "nse", pady = (5, 3), padx = (0, 0))
+        self.view_file.configure(yscrollcommand = self.view_file_scrollbar.set)
+
         # Initialize view file list as empty array
         self.view_file_list = []
         # Display values in view file listbox
@@ -202,7 +214,8 @@ class ClientManager(customtkinter.CTkFrame):
                 filepath = self.PATH + "\masters\\" + master_surname + ".csv"
                 with open(filepath, 'w') as local:
                     local.write(file_content)
-                    
+        self.populate_view_file()
+        self.update_view_file()            
 
     # Clear file
     def clear_file(self):
@@ -244,6 +257,7 @@ class ClientManager(customtkinter.CTkFrame):
 
     # Add all files to view file list
     def populate_view_file(self):
+        self.view_file_list = []
         master_files = os.listdir(self.PATH + "\masters")
         for file in master_files:
             self.view_file_list.append(file)
@@ -253,6 +267,7 @@ class ClientManager(customtkinter.CTkFrame):
     
     # update view file listbox with values
     def update_view_file(self):
+        self.view_file.delete(0, "end")
         for file in self.view_file_list:
             self.view_file.insert("end", file)
     

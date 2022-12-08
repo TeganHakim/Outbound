@@ -83,8 +83,20 @@ class MessageCenter(customtkinter.CTkFrame):
         self.select_dates_frame.columnconfigure(2, weight = 1)
 
         # Setup possible dates listbox
-        self.possible_dates = tkinter.Listbox(self.select_dates_frame, activestyle = "none", bg = "gray38", fg = "white", font = ("Roboto", -16), highlightthickness = 0, highlightbackground = "gray38", bd = 0)
-        self.possible_dates.grid(row = 0, column = 0, rowspan = 4, sticky = "nsew", padx = (15, 0), pady = (10, 15))
+
+        self.possible_dates_frame = customtkinter.CTkFrame(master = self.select_dates_frame)
+        self.possible_dates_frame.grid(row = 0, column = 0, rowspan = 4, sticky = "nsew", padx = (15, 0), pady = (10, 15))
+
+        self.possible_dates_frame.rowconfigure(0, weight = 1)
+        self.possible_dates_frame.columnconfigure(0, weight = 1)
+
+        self.possible_dates = tkinter.Listbox(self.possible_dates_frame, activestyle = "none", bg = "gray38", fg = "white", font = ("Roboto", -16), highlightthickness = 0, highlightbackground = "gray38", bd = 0)
+        self.possible_dates.grid(row = 0, column = 0, columnspan = 1, rowspan = 2, pady = (0, 0), padx = (0, 0), sticky = "nsew")
+
+        self.possible_dates_scrollbar = customtkinter.CTkScrollbar(master = self.possible_dates_frame, scrollbar_color = self.frame_right.bg_color, fg_color = ("white", "grey38"), corner_radius = 10, command = self.possible_dates.yview)
+        self.possible_dates_scrollbar.grid(row = 0, column = 0, sticky = "nse", pady = (5, 3), padx = (0, 0))
+        self.possible_dates.configure(yscrollcommand = self.possible_dates_scrollbar.set)
+
         # Initialize list of possible dates as empty array
         self.possible_dates_list = self.config["message_center"]["possible_dates"]
         # Bind focus mouse events to listbox
@@ -100,8 +112,20 @@ class MessageCenter(customtkinter.CTkFrame):
         self.delete_button.grid(row = 2, column = 1)
 
         # Setup final dates listbox
-        self.final_dates = tkinter.Listbox(self.select_dates_frame, activestyle = "none", bg = "gray38", fg = "white", font = ("Roboto", -16), highlightthickness = 0, highlightbackground = "gray38", bd = 0)
-        self.final_dates.grid(row = 0, column = 2, rowspan = 4, sticky = "nsew", padx = (0, 15), pady = (10, 15))
+
+        self.final_dates_frame = customtkinter.CTkFrame(master = self.select_dates_frame)
+        self.final_dates_frame.grid(row = 0, column = 2, rowspan = 4, sticky = "nsew", padx = (0, 15), pady = (10, 15))
+
+        self.final_dates_frame.rowconfigure(0, weight = 1)
+        self.final_dates_frame.columnconfigure(0, weight = 1)
+
+        self.final_dates = tkinter.Listbox(self.final_dates_frame, activestyle = "none", bg = "gray38", fg = "white", font = ("Roboto", -16), highlightthickness = 0, highlightbackground = "gray38", bd = 0)
+        self.final_dates.grid(row = 0, column = 0, columnspan = 1, rowspan = 2, pady = (0, 0), padx = (0, 0), sticky = "nsew")
+
+        self.final_dates_scrollbar = customtkinter.CTkScrollbar(master = self.final_dates_frame, scrollbar_color = self.frame_right.bg_color, fg_color = ("white", "grey38"), corner_radius = 10, command = self.final_dates.yview)
+        self.final_dates_scrollbar.grid(row = 0, column = 0, sticky = "nse", pady = (5, 3), padx = (0, 0))
+        self.final_dates.configure(yscrollcommand = self.final_dates_scrollbar.set)
+
         # Initialize list of final dates as empty array
         self.final_dates_list = self.config["message_center"]["final_dates"]
         # Bind focus mouse events to listbox
