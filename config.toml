@@ -1,13 +1,13 @@
 [message_center]
-message = "Test of message center\n"
-possible_dates = [ "tegan.csv", "tyler.csv", "test 12072022.csv", "tyler 102422.csv",]
-final_dates = [ "tegan 02132023.csv",]
-master_select = "on"
-client_select = "on"
+message = "\n"
+possible_dates = []
+final_dates = []
+master_select = "off"
+client_select = "off"
 month = "December"
-day = "7"
+day = "8"
 year = "2022"
-time = "08:51"
+time = "11:16"
 am_pm = "PM"
 instant = 1
 
