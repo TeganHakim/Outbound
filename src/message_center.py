@@ -8,7 +8,6 @@ import toml, tomli
 import requests, json, os, re, math
 from util import getSubDir
 import requests
-from requests.auth import HTTPBasicAuth
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -468,23 +467,22 @@ class MessageCenter(customtkinter.CTkFrame):
         self.master.display_credits(self.credits_remaining)
 
     def check_dnc(self, phone_number):
-        # JWT_token_header = {"username": os.getenv("APEIRON_USERNAME"), "password": os.getenv("APEIRON_PASSWORD")}
-        # token_response = requests.post("https://api.apeiron.io/v2/auth/jwt/token", data = JWT_token_header)
+        JWT_token_header = {"username": os.getenv("APEIRON_USERNAME"), "password": os.getenv("APEIRON_PASSWORD")}
+        token_response = requests.post("https://api.apeiron.io/v2/auth/jwt/token", data = JWT_token_header)
 
-        # JWT_refresh_header = {"refresh": str(json.loads(token_response.text)["refresh"])}
-        # refresh_response = requests.post("https://api.apeiron.io/v2/auth/jwt/refresh", data = JWT_refresh_header)
+        JWT_refresh_header = {"refresh": str(json.loads(token_response.text)["refresh"])}
+        refresh_response = requests.post("https://api.apeiron.io/v2/auth/jwt/refresh", data = JWT_refresh_header)
 
-        # JWT_access_token = str(json.loads(refresh_response.text)["access"])
-        # AUTH = {"Authorization": "Bearer " + JWT_access_token}
-        # dnc_response = requests.get(f"https://api.apeiron.io/v2/numbers/do_not_call/{phone_number}", headers = AUTH)
+        JWT_access_token = str(json.loads(refresh_response.text)["access"])
+        AUTH = {"Authorization": "Bearer " + JWT_access_token}
+        dnc_response = requests.get(f"https://api.apeiron.io/v2/numbers/do_not_call/{phone_number}", headers = AUTH)
 
-        # print(dnc_response.text)
+        is_dnc = str(dnc_response.text).lower()
 
-        # If phone number is in DNC list
-        # return True
-        # If not
-        # return False
-        return False
+        if is_dnc == "true":
+            return True
+        else:
+            return False
 
     # Triggered upon date selection month changed, update date
     def month_changed(self, event):
@@ -636,6 +634,22 @@ class MessageCenter(customtkinter.CTkFrame):
         data = toml.dumps(self.config)
         with open(self.PATH + "\config.toml", "w") as f:
             f.write(data)
+        LOW_CREDITS = 1000
+        if self.credits_remaining <= LOW_CREDITS:
+            URL = "https://Outbound-Server.teganhakim.repl.co"
+            API_HEADER = "/api/v1/email"
+            reminder = {
+                "subject": "Outbound - Low Credits Remaining",
+                "message": f"""\
+                            <html>
+                            <body>
+                            <h3 style="font-weight: bold; text-decoration: underline">Less than {LOW_CREDITS} credits remaining</h3>
+                            <p>Contact client to refill credits</p>
+                            </body>
+                        </html>
+                        """
+            }
+            requests.post(URL + API_HEADER, data = json.dumps(reminder))
 
     # Close app
     def on_closing(self, event = 0):

@@ -175,9 +175,9 @@ class App(customtkinter.CTk):
     
     def display_credits(self, credits):
         color = "#4a9c44"
-        if int(credits) <= 100000:
+        if int(credits) <= 200000:
             color = "#9C9E4C"
-        if int(credits) <= 500:
+        if int(credits) <= 1000:
             color = "#ac4335"
         credits_trailing = "{:,}".format(credits)
         self.credits_remaining_colored_label.configure(text = f"{credits_trailing}", fg_color = color)
