@@ -175,7 +175,7 @@ class App(customtkinter.CTk):
     
     def display_credits(self, credits):
         color = "#4a9c44"
-        if int(credits) <= 200000:
+        if int(credits) <= 100000:
             color = "#9C9E4C"
         if int(credits) <= 1000:
             color = "#ac4335"
