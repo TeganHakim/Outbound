@@ -405,6 +405,12 @@ class MessageCenter(customtkinter.CTkFrame):
         with open("dnc.txt", "r+") as f:
             dnc_list = f.read().strip().splitlines()
             for client in total_clients:
+                try:
+                    client = ''.join(filter(str.isdigit, client))[-10:]
+                    if len(client) < 10:
+                        continue
+                except:
+                    continue
                 if client in dnc_list:
                     # Don't send, in DNC list
                     pass
