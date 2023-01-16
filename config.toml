@@ -1,9 +1,9 @@
 [message_center]
 message = "\n"
-possible_dates = [ "tegan 02132023.csv", "test 12072022.csv", "tyler 102422.csv",]
-final_dates = [ "HM Daily Lead Database 2021 (1).csv",]
+possible_dates = []
+final_dates = []
 master_select = "off"
-client_select = "on"
+client_select = "off"
 month = "December"
 day = "8"
 year = "2022"
@@ -12,4 +12,4 @@ am_pm = "PM"
 instant = 1
 
 [client_manager]
-filename = "tyler.csv"
+filename = ""
