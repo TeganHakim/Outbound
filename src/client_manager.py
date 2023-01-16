@@ -2,7 +2,7 @@
 import tkinter
 import tkinter.messagebox
 from tkinter import filedialog
-from tkinter.messagebox import showerror
+from tkinter.messagebox import showerror, askyesno
 import customtkinter
 import base64, os
 import toml, tomli
@@ -156,8 +156,14 @@ class ClientManager(customtkinter.CTkFrame):
         self.statistics.configure(state = "disabled")
 
         # Clear all button
-        self.clear = customtkinter.CTkButton(master = self.frame_right, text = "Clear File", border_width = 2, fg_color = None, command = self.clear_file)
-        self.clear.grid(row = 8, column = 2, columnspan = 1, pady = 15, padx = (0, 20), sticky = "ew")
+        self.util_frame = customtkinter.CTkFrame(master = self.frame_right, fg_color=self.frame_right.fg_color, corner_radius = 10)
+        self.util_frame.grid(row = 8, column = 2, columnspan = 1, pady = 15, padx = 20, sticky = "nsew")
+
+        self.clear = customtkinter.CTkButton(master = self.util_frame, text = "Clear Selection", border_width = 2, fg_color = None, command = self.clear_file)
+        self.clear.grid(row = 0, column = 0, pady = 0, padx = (15, 0), sticky = "ew")
+
+        self.delete = customtkinter.CTkButton(master = self.util_frame, text = "Delete File", border_width = 2, fg_color = None, command = self.delete_file)
+        self.delete.grid(row = 1, column = 0, pady = 0, padx = (15, 0), sticky = "ew")
          
         if self.config["client_manager"]["filename"] != "":
             self.file_viewer(self.config["client_manager"]["filename"])
@@ -227,7 +233,24 @@ class ClientManager(customtkinter.CTkFrame):
         self.client_list_label.configure(text = "Client List:")
         self.view_file.selection_clear(0, 'end')
         self.update_statistics()
-        
+    
+    # Delete file
+    def delete_file(self):
+        response = askyesno("Delete File", "Are you sure you want to delete this file?")
+        if response == True:
+            client_surname = self.client_list_label.cget("text").split(": ")[-1]
+            os.remove(self.PATH + getSubDir(client_surname) + client_surname)
+            self.client_list.configure(state = "normal")
+            self.client_list.delete('0.0', 'end')
+            self.client_list.configure(state = "disabled")
+            self.file_open = False
+            self.edit_button.configure(text = "Edit")
+            self.client_list_label.configure(text = "Client List:")
+            self.view_file.selection_clear(0, 'end')
+            self.populate_view_file()
+            self.update_view_file()
+            self.update_statistics()
+
     # Edit clientel list
     def edit_client_list(self):
         if self.client_list.cget("state") == "disabled":
@@ -280,7 +303,10 @@ class ClientManager(customtkinter.CTkFrame):
     def file_viewer(self, client_surname):
         original_filepath = self.PATH + getSubDir(client_surname) + client_surname
         file_content = open(original_filepath, "r").read()        
-        self.client_list_label.configure(text = "Client List: " + client_surname)
+        if (getSubDir(client_surname).replace("\\", "").strip() == "clients"):
+            self.client_list_label.configure(text = "Client List: " + client_surname)
+        else:
+            self.client_list_label.configure(text = "Master List: " + client_surname)
         self.client_list.configure(state = "normal")
         self.client_list.delete('0.0', 'end')
         self.client_list.insert('0.0', file_content)   

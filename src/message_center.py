@@ -429,6 +429,7 @@ class MessageCenter(customtkinter.CTkFrame):
         # Send SMS instantly
         if self.instant.get() == 1:
             self.instant_message = {
+                "api_key": os.getenv("OUTBOUND_API_KEY"),
                 "status": "instant",
                 "content": {
                     "total_client_list": total_clients,
@@ -447,6 +448,7 @@ class MessageCenter(customtkinter.CTkFrame):
         # Send SMS at given date 
         else:
             self.scheduled_message = {
+            "api_key": os.getenv("OUTBOUND_API_KEY"),
             "status": "pending",
             "content": {
                 "total_client_list": total_clients,
@@ -645,6 +647,7 @@ class MessageCenter(customtkinter.CTkFrame):
             URL = "https://Outbound-Server.teganhakim.repl.co"
             API_HEADER = "/api/v1/email"
             reminder = {
+                "api_key": os.getenv("OUTBOUND_API_KEY"),
                 "subject": "Outbound - Low Credits Remaining",
                 "message": f"""\
                             <html>

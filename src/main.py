@@ -28,10 +28,18 @@ class App(customtkinter.CTk):
     def __init__(self):
         super().__init__()
         # Basic window setup
+        try:
+            from ctypes import windll  # Only exists on Windows.
+            myappid = "outwardindustries.outbound"
+            windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+        except ImportError:
+            pass
+
         self.title("Outbound v1.0")
         self.geometry(f"{App.WIDTH}x{App.HEIGHT}")
         self.minsize(App.MINWIDTH, App.MINHEIGHT)
         self.protocol("WM_DELETE_WINDOW", self.on_closing)  
+        self.iconbitmap("assets/outbound.ico")
 
         # Configure grid layout for base app
         self.grid_columnconfigure(1, weight = 1)
