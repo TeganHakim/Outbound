@@ -670,7 +670,10 @@ class MessageCenter(customtkinter.CTkFrame):
         URL = "https://Outbound-Server.teganhakim.repl.co"
         API_HEADER = "/api/v1/credits"
 
-        credits_response = requests.get(URL + API_HEADER)
-        response_data = json.loads(credits_response.text)
-        credits = response_data["credits_remaining"]
+        try:
+            credits_response = requests.get(URL + API_HEADER)
+            response_data = json.loads(credits_response.text)
+            credits = response_data["credits_remaining"]
+        except:
+            credits = 0
         return credits

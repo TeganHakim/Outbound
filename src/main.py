@@ -145,43 +145,52 @@ class App(customtkinter.CTk):
             'content-type': "application/x-www-form-urlencoded",
             'cache-control': "no-cache"
         }
-        status_response = requests.post(URL, headers=headers)
-        response_data = json.loads(status_response.text)
-        if (response_data["stat"] == "ok"):
-            index = 0
-            for i in range(len(response_data["monitors"])):
-                if response_data["monitors"][i]["friendly_name"] == "Outbound Server":
-                    index = i                
-            server_status = response_data["monitors"][index]["status"]
-            server_text = ""
-            if server_status == 0:
-                server_text = "Paused "
-            elif server_status == 1:
-                server_text = "Not Checked "
-            elif server_status == 2:
-                server_text = "Online "
+        try:
+            status_response = requests.post(URL, headers=headers)
+            response_data = json.loads(status_response.text)
+            if (response_data["stat"] == "ok"):
+                index = 0
+                for i in range(len(response_data["monitors"])):
+                    if response_data["monitors"][i]["friendly_name"] == "Outbound Server":
+                        index = i                
+                server_status = response_data["monitors"][index]["status"]
+                server_text = ""
+                if server_status == 0:
+                    server_text = "Paused "
+                elif server_status == 1:
+                    server_text = "Not Checked "
+                elif server_status == 2:
+                    server_text = "Online "
+                else:
+                    server_text = "Offline "
+                color = "#4a9c44"
+                if server_status == 0 or server_status == 1:
+                    color = "#8a5c56"
+                elif server_status > 2:
+                    color = "#ac4335"
+                self.server_status_colored_label.configure(text = f"{server_text}", fg_color = color)
             else:
-                server_text = "Offline "
-            color = "#4a9c44"
-            if server_status == 0 or server_status == 1:
-                color = "#8a5c56"
-            elif server_status > 2:
-                color = "#ac4335"
-            self.server_status_colored_label.configure(text = f"{server_text}", fg_color = color)
-        else:
-            self.server_status_colored_label.configure(text = "Cannot Fetch ", fg_color = "#8a5c56")
+                self.server_status_colored_label.configure(text = "Cannot Fetch", fg_color = "#807e7e")
+        except:
+            self.server_status_colored_label.configure(text = "Cannot Fetch", fg_color = "#807e7e")
         
     # Update credits remaining
     def update_credits_remaining(self):
         URL = "https://Outbound-Server.teganhakim.repl.co"
         API_HEADER = "/api/v1/credits"
 
-        credits_response = requests.get(URL + API_HEADER)
-        response_data = json.loads(credits_response.text)
-        credits = response_data["credits_remaining"]
+        try:
+            credits_response = requests.get(URL + API_HEADER)
+            response_data = json.loads(credits_response.text)
+            credits = response_data["credits_remaining"]
+        except:
+            credits = "Cannot Fetch"
         self.display_credits(credits)
     
     def display_credits(self, credits):
+        if credits == "Cannot Fetch":
+            self.credits_remaining_colored_label.configure(text = "Cannot Fetch", fg_color = "#807e7e")
+            return
         color = "#4a9c44"
         if int(credits) <= 100000:
             color = "#9C9E4C"
