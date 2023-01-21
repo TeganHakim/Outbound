@@ -487,10 +487,11 @@ class MessageCenter(customtkinter.CTkFrame):
 
         is_dnc = str(dnc_response.text).lower()
 
-        if is_dnc == "true":
-            return True
-        else:
-            return False
+        # if is_dnc == "true":
+        #     return True
+        # else:
+        #     return False
+        return False
 
     # Triggered upon date selection month changed, update date
     def month_changed(self, event):
@@ -640,23 +641,6 @@ class MessageCenter(customtkinter.CTkFrame):
         data = toml.dumps(self.config)
         with open(self.PATH + "\config.toml", "w") as f:
             f.write(data)
-        LOW_CREDITS = 1000
-        if self.credits_remaining <= LOW_CREDITS:
-            URL = "https://Outbound-Server.teganhakim.repl.co"
-            API_HEADER = "/api/v1/reminder"
-            reminder = {
-                "api_key": os.getenv("OUTBOUND_API_KEY"),
-                "subject": "Outbound - Low Credits Remaining",
-                "message": f"""\
-                            <html>
-                            <body>
-                            <h3 style="font-weight: bold; text-decoration: underline">Less than {LOW_CREDITS} credits remaining</h3>
-                            <p>Contact client to refill credits</p>
-                            </body>
-                        </html>
-                        """
-            }
-            requests.post(URL + API_HEADER, data = json.dumps(reminder))
 
     # Close app
     def on_closing(self, event = 0):

@@ -180,7 +180,11 @@ class App(customtkinter.CTk):
         API_HEADER = "/api/v1/credits"
 
         try:
-            credits_response = requests.get(URL + API_HEADER)
+            content = {
+            "api_key": os.getenv("OUTBOUND_API_KEY"),
+            "reminder": "true"
+            }
+            credits_response = requests.post(URL + API_HEADER, data = json.dumps(content))
             response_data = json.loads(credits_response.text)
             credits = response_data["credits_remaining"]
         except:
