@@ -324,9 +324,9 @@ class ClientManager(customtkinter.CTkFrame):
         if client_surname.strip() != "Client List: ".strip():
             filepath = self.PATH + getSubDir(client_surname) + client_surname
             total_clients = len(open(filepath, "r").read().strip().splitlines())
-        message_rate = 50
+        message_rate = 40
         approx_time = round((total_clients) / message_rate, 2) 
-        message_price = 0.0078
+        message_price = 0.0055
         num_credits = total_clients
         approx_price = round((total_clients) * message_price, 4)
         message = "Total Recieving Clients:\n- {} clients\n\nApproximate Send Time:\n- {} seconds\n\nApproximate Price:\n- {} credits (${})".format(total_clients, approx_time, num_credits, approx_price)

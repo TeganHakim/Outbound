@@ -617,9 +617,9 @@ class MessageCenter(customtkinter.CTkFrame):
             filename = self.PATH + getSubDir(file) + file
             total_clients += len(open(filename, "r").read().strip().splitlines())
         num_messages = 1 + math.floor(message_length / 160)
-        message_rate = 50
+        message_rate = 40
         approx_time = round((num_messages * total_clients) / message_rate, 2) 
-        message_price = 0.0078
+        message_price = 0.0055
         num_credits = num_messages * total_clients
         approx_price = round((num_messages * total_clients) * message_price, 4)
         message = "Message Length:\n- {} characters ({} messages)\n\nTotal Recieving Clients:\n- {} clients ({} files)\n\nApproximate Send Time:\n- {} seconds\n\nApproximate Price:\n- {} credits (${})".format(message_length, num_messages, total_clients, total_files, approx_time, num_credits, approx_price)
