@@ -326,10 +326,8 @@ class ClientManager(customtkinter.CTkFrame):
             total_clients = len(open(filepath, "r").read().strip().splitlines())
         message_rate = 40
         approx_time = round((total_clients) / message_rate, 2) 
-        message_price = 0.0055
         num_credits = total_clients
-        approx_price = round((total_clients) * message_price, 4)
-        message = "Total Recieving Clients:\n- {} clients\n\nApproximate Send Time:\n- {} seconds\n\nApproximate Price:\n- {} credits (${})".format(total_clients, approx_time, num_credits, approx_price)
+        message = "Total Recieving Clients:\n- {} clients\n\nApproximate Send Time:\n- {} seconds\n\nApproximate Price:\n- {} credits".format(total_clients, approx_time, num_credits)
         self.statistics.insert("0.0", message)
         self.statistics.configure(state = "disabled")
 
