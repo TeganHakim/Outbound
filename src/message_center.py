@@ -487,11 +487,10 @@ class MessageCenter(customtkinter.CTkFrame):
 
         is_dnc = str(dnc_response.text).lower()
 
-        # if is_dnc == "true":
-        #     return True
-        # else:
-        #     return False
-        return False
+        if is_dnc == "true":
+            return True
+        else:
+            return False
 
     # Triggered upon date selection month changed, update date
     def month_changed(self, event):
