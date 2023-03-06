@@ -4,12 +4,12 @@ possible_dates = []
 final_dates = []
 master_select = "off"
 client_select = "off"
-month = "January"
-day = "21"
+month = "March"
+day = "5"
 year = "2023"
-time = "03:50"
+time = "10:18"
 am_pm = "PM"
 instant = 1
 
 [client_manager]
-filename = ""
+filename = "test 03052023.csv"

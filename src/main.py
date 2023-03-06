@@ -21,8 +21,8 @@ class App(customtkinter.CTk):
     HEIGHT = 850
 
     # Minimum window dimensions
-    MINWIDTH = 1100
-    MINHEIGHT = 800
+    MINWIDTH = 1300
+    MINHEIGHT = 700
 
     # Initiliaze tkinter GUI window application
     def __init__(self):
@@ -38,6 +38,7 @@ class App(customtkinter.CTk):
         self.title("Outbound v1.0")
         self.geometry(f"{App.WIDTH}x{App.HEIGHT}")
         self.minsize(App.MINWIDTH, App.MINHEIGHT)
+        self.state("zoomed")
         self.protocol("WM_DELETE_WINDOW", self.on_closing)  
         self.iconbitmap("assets/outbound.ico")
 

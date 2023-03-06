@@ -143,36 +143,35 @@ class MessageCenter(customtkinter.CTkFrame):
 
         # Configure selected groups frame
         self.selected_groups_frame = customtkinter.CTkFrame(master = self.frame_right)
-        self.selected_groups_frame.grid(row = 1, column = 2, pady = 10, padx = (0, 20), sticky = "nsew")
+        self.selected_groups_frame.grid(row = 1, column = 2, pady = 0, padx = (0, 20), sticky = "nsew")
         
         # Setup Master filter
         self.filter_selection_master = customtkinter.CTkCheckBox(master = self.selected_groups_frame, text = "Master Files", command = self.filter_selection, onvalue = "on", offvalue = "off")
-        self.filter_selection_master.grid(row = 0, column = 0, pady = (20, 5), padx = 20, sticky = "nsw")
+        self.filter_selection_master.grid(row = 0, column = 0, pady = (10, 0), padx = 20, sticky = "nsw")
         if self.config["message_center"]["master_select"] == "on":
             self.filter_selection_master.select()
 
         # Setup Client filter
         self.filter_selection_client = customtkinter.CTkCheckBox(master = self.selected_groups_frame, text = "Client Files", command = self.filter_selection, onvalue = "on", offvalue = "off")
-        self.filter_selection_client.grid(row = 1, column = 0, pady = (5, 20), padx = 20, sticky = "nsw")
+        self.filter_selection_client.grid(row = 1, column = 0, pady = (10, 10), padx = 20, sticky = "nsw")
         if self.config["message_center"]["client_select"] == "on":
             self.filter_selection_client.select()       
 
         # Display date selection title
         self.date_select_label = customtkinter.CTkLabel(master = self.frame_right, text="Scheduled Send:", text_font=("Roboto Medium", -16, "bold"))
-        self.date_select_label.grid(row = 2, column = 2, columnspan = 1, pady = (10, 0), padx = (0, 20))
+        self.date_select_label.grid(row = 2, column = 2, columnspan = 1, pady = (5, 0), padx = (0, 20))
 
         # Configure date selection frame
         self.date_select_frame = customtkinter.CTkFrame(master = self.frame_right)
-        self.date_select_frame.grid(row = 3, column = 2, pady = 10, padx = (0, 20), sticky = "nsew")
+        self.date_select_frame.grid(row = 3, column = 2, pady = (5, 5), padx = (0, 20), sticky = "nsew")
 
         # Configure date selection frame's grid layout
-        self.date_select_frame.rowconfigure((1, 2, 3, 4), weight = 1)
         self.date_select_frame.columnconfigure((0, 1), weight = 1)
 
         # Date selection month button 
         current_month = datetime.datetime.now().strftime("%B")
         self.month = customtkinter.CTkComboBox(master = self.date_select_frame, command = self.month_changed, values = ("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"))                            
-        self.month.grid(row = 0, column = 0, pady = 10, padx = 5, sticky="nsew")  
+        self.month.grid(row = 0, column = 0, pady = 5, padx = 5, sticky="nsew")  
         if self.config["message_center"]["month"] != "":
             self.month.set(self.config["message_center"]["month"])
         else:
@@ -180,8 +179,8 @@ class MessageCenter(customtkinter.CTkFrame):
 
         # Date selection day button 
         current_day = datetime.datetime.now().day
-        self.day = customtkinter.CTkComboBox(master = self.date_select_frame, command = self.day_changed, values = ("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31"))
-        self.day.grid(row = 1, column = 0, pady = 10, padx = 5, sticky = "nsew")
+        self.day = customtkinter.CTkComboBox(master = self.date_select_frame, command = self.day_changed, values = ("1", "2", "3", "4", "5", "6", "7", "8", "9", "5", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31"))
+        self.day.grid(row = 1, column = 0, pady = 5, padx = 5, sticky = "nsew")
         if self.config["message_center"]["day"] != 0:
             self.day.set(self.config["message_center"]["day"])
         else:
@@ -190,7 +189,7 @@ class MessageCenter(customtkinter.CTkFrame):
         # Date Selection year button
         current_year = datetime.datetime.now().year
         self.year = customtkinter.CTkComboBox(master = self.date_select_frame, command = self.year_changed, values = (str(current_year), str(current_year + 1), str(current_year + 2)))
-        self.year.grid(row = 2, column = 0, pady = 10, padx = 5, sticky="nsew")
+        self.year.grid(row = 2, column = 0, pady = 5, padx = 5, sticky="nsew")
         if self.config["message_center"]["year"] != "":
             self.year.set(self.config["message_center"]["year"])
         else:
@@ -218,7 +217,7 @@ class MessageCenter(customtkinter.CTkFrame):
         # Date selection send instantly button
         self.instant = customtkinter.IntVar(value = 1)
         self.instant_switch = customtkinter.CTkSwitch(master = self.date_select_frame, text = "Send Instantly", command = self.instant_changed, variable = self.instant, onvalue = 1, offvalue = 0, text_font = ("Roboto Medium", -16))
-        self.instant_switch.grid(row = 5, column = 0, pady = (5, 10), padx =20, sticky = "ew")
+        self.instant_switch.grid(row = 4, column = 0, pady = (0, 10), padx =20, sticky = "ew")
         if self.config["message_center"]["instant"] == 0:
             self.instant_switch.deselect()
 
@@ -242,7 +241,7 @@ class MessageCenter(customtkinter.CTkFrame):
         
         # Configure statistics frame
         self.statistics_frame = customtkinter.CTkFrame(master = self.frame_right, corner_radius = 10, fg_color = self.frame_right.fg_color)
-        self.statistics_frame.grid(row = 6, column = 2, pady = (5, 0), padx = (0, 20), sticky = "nsew")
+        self.statistics_frame.grid(row = 6, column = 2, pady = (0, 0), padx = (0, 20), sticky = "nsew")
         # Configure statistics frame's grid layout
         self.statistics_frame.rowconfigure(0, weight = 1)
         self.statistics_frame.columnconfigure(0, weight = 1)
@@ -260,7 +259,7 @@ class MessageCenter(customtkinter.CTkFrame):
 
         # Configure send message button
         self.send_message = customtkinter.CTkButton(master = self.frame_right, text = "Send Message", border_width= 2, fg_color=None, command = self.send_message)
-        self.send_message.grid(row = 8, column = 2, columnspan = 1, pady = 20, padx = (0, 20), sticky = "ew")
+        self.send_message.grid(row = 8, column = 2, columnspan = 1, pady = (5, 20), padx = (0, 20), sticky = "ew")
 
     # ========================== #
     #  Message Center Functions  #
@@ -616,7 +615,7 @@ class MessageCenter(customtkinter.CTkFrame):
         for file in self.final_dates_list:
             filename = self.PATH + getSubDir(file) + file
             total_clients += len(open(filename, "r").read().strip().splitlines())
-        num_messages = 1 + math.floor(message_length / 160)
+        num_messages = 1 + math.floor(abs(message_length - 1) / 160)
         message_rate = 40
         approx_time = round((num_messages * total_clients) / message_rate, 2)
         num_credits = num_messages * total_clients

@@ -27,8 +27,8 @@ class ClientManager(customtkinter.CTkFrame):
         self.grid_rowconfigure(0, weight = 1)
 
         # Create frame for Client Manager
-        self.frame_right = customtkinter.CTkFrame(master=self)
-        self.frame_right.grid(row = 0, column = 0, sticky  ="nsew")
+        self.frame_right = customtkinter.CTkFrame(master = self)
+        self.frame_right.grid(row = 0, column = 0, sticky = "nsew")
 
         # Configure Client Manager frame's grid layout
         self.frame_right.rowconfigure((0, 1, 2, 3), weight = 1)
